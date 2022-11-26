@@ -1,9 +1,9 @@
 package com.deblock.cucumber.datatable.data;
 
 public interface TypeMetadata {
-    String getTypeDescription();
+    String typeDescription();
 
-    String getSample();
+    String sample();
 
     Object convert(String value) throws ConversionError;
 

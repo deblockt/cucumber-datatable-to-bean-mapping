@@ -2,11 +2,8 @@ package com.deblock.cucumber.datatable.validator.builder;
 
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
-import jdk.jshell.spi.ExecutionControl;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class HeaderBuilder {
@@ -28,8 +25,8 @@ public class HeaderBuilder {
 
     public static TypeMetadata typeMetadata(String sample, String typeDescription) {
         final var typeMetadataMock = Mockito.mock(TypeMetadata.class);
-        Mockito.when(typeMetadataMock.getSample()).thenReturn(sample);
-        Mockito.when(typeMetadataMock.getTypeDescription()).thenReturn(typeDescription);
+        Mockito.when(typeMetadataMock.sample()).thenReturn(sample);
+        Mockito.when(typeMetadataMock.typeDescription()).thenReturn(typeDescription);
         return typeMetadataMock;
     }
 

@@ -28,9 +28,9 @@ public class DataTableValidator {
         }
 
         final var nonMatchMandatoryHeader = this.headers.stream()
-                .filter(it -> !it.optional)
+                .filter(it -> !it.optional())
                 .filter(header -> headers.stream().noneMatch(header::match))
-                .map(it -> it.names.get(0))
+                .map(it -> it.names().get(0))
                 .collect(Collectors.joining("\", \""));
         if (nonMatchMandatoryHeader.length() > 0) {
             throw new DataTableDoesNotMatch(
@@ -42,29 +42,29 @@ public class DataTableValidator {
     public String description() {
         final var stringBuilder = new StringBuilder();
         final var sample = new ArrayList<List<String>>();
-        sample.add(this.headers.stream().map(it -> it.names.get(0)).collect(Collectors.toList()));
-        sample.add(this.headers.stream().map(DatatableHeader::getSample).collect(Collectors.toList()));
+        sample.add(this.headers.stream().map(it -> it.names().get(0)).collect(Collectors.toList()));
+        sample.add(this.headers.stream().map(DatatableHeader::sample).collect(Collectors.toList()));
 
         new TablePrinter().printTable(sample, stringBuilder);
 
         stringBuilder.append('\n');
 
         for (DatatableHeader header : this.headers) {
-            stringBuilder.append(header.names.get(0));
+            stringBuilder.append(header.names().get(0));
             stringBuilder.append(" (");
-            stringBuilder.append(header.optional ? "optional" : "mandatory");
-            if (header.defaultValue != null && !header.defaultValue.isBlank()) {
+            stringBuilder.append(header.optional() ? "optional" : "mandatory");
+            if (header.defaultValue() != null && !header.defaultValue().isBlank()) {
                 stringBuilder.append(", default: ");
-                stringBuilder.append(header.defaultValue);
+                stringBuilder.append(header.defaultValue());
             }
 
             stringBuilder.append(", type: ");
-            stringBuilder.append(header.getTypeDescription());
+            stringBuilder.append(header.typeDescription());
 
             stringBuilder.append(")");
-            if (header.description != null && header.description.length() > 0) {
+            if (header.description() != null && header.description().length() > 0) {
                 stringBuilder.append(": ");
-                stringBuilder.append(header.description);
+                stringBuilder.append(header.description());
             }
             stringBuilder.append('\n');
         }
@@ -74,7 +74,7 @@ public class DataTableValidator {
 
     private void throwUnknownHeaderException(List<String> headers) {
         final var availableHeaders = this.headers.stream()
-                .map(it -> it.names.get(0))
+                .map(it -> it.names().get(0))
                 .collect(Collectors.joining("\", \""));
         throw new DataTableDoesNotMatch(
                 "The following headers \"" + String.join("\", \"", headers) + "\" are not defined for this dataTable. "

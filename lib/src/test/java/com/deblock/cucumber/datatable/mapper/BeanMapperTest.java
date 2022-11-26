@@ -90,12 +90,12 @@ public class BeanMapperTest {
         public TypeMetadata build(Class<?> aClass) {
             return new TypeMetadata() {
                 @Override
-                public String getTypeDescription() {
+                public String typeDescription() {
                     return null;
                 }
 
                 @Override
-                public String getSample() {
+                public String sample() {
                     return null;
                 }
 

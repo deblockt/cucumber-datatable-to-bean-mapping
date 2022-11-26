@@ -2,7 +2,6 @@ package com.deblock.cucumber.datatable.mapper;
 
 import com.deblock.cucumber.datatable.annotations.Column;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
-import com.deblock.cucumber.datatable.data.TypeMetadata;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -28,7 +26,7 @@ public class BeanMapper implements DatatableMapper {
                 .filter(field -> field.isAnnotationPresent(Column.class))
                 .map(field -> this.buildFieldData(field, typeMetadataFactory))
                 .forEach(fieldData -> {
-                    fieldData.header.names.forEach(name -> fieldDataByColumnName.put(name, fieldData));
+                    fieldData.header.names().forEach(name -> fieldDataByColumnName.put(name, fieldData));
                     this.headers.add(fieldData.header);
                 });
     }
@@ -73,7 +71,7 @@ public class BeanMapper implements DatatableMapper {
         if (setters.isPresent()) {
             return new FieldData(header, (bean, datatableValue) -> {
                 try {
-                    setters.get().invoke(bean, header.typeMetadata.convert(datatableValue));
+                    setters.get().invoke(bean, header.typeMetadata().convert(datatableValue));
                 } catch (InvocationTargetException | IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
@@ -81,7 +79,7 @@ public class BeanMapper implements DatatableMapper {
         } else if (Modifier.isPublic(field.getModifiers())) {
             return new FieldData(header, (bean, datatableValue) -> {
                 try {
-                    field.set(bean, header.typeMetadata.convert(datatableValue));
+                    field.set(bean, header.typeMetadata().convert(datatableValue));
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
