@@ -27,17 +27,15 @@ public class DataTableValidator {
             throwUnknownHeaderException(additionalHeaders);
         }
 
-        if (this.headers.size() != headers.size()) {
-            final var nonMatchMandatoryHeader = this.headers.stream()
-                    .filter(it -> !it.optional)
-                    .filter(header -> headers.stream().noneMatch(header::match))
-                    .map(it -> it.names.get(0))
-                    .collect(Collectors.joining("\", \""));
-            if (nonMatchMandatoryHeader.length() > 0) {
-                throw new DataTableDoesNotMatch(
-                        "The following headers are mandatory : \"" + nonMatchMandatoryHeader + "\"\n" + this.description()
-                );
-            }
+        final var nonMatchMandatoryHeader = this.headers.stream()
+                .filter(it -> !it.optional)
+                .filter(header -> headers.stream().noneMatch(header::match))
+                .map(it -> it.names.get(0))
+                .collect(Collectors.joining("\", \""));
+        if (nonMatchMandatoryHeader.length() > 0) {
+            throw new DataTableDoesNotMatch(
+                    "The following headers are mandatory : \"" + nonMatchMandatoryHeader + "\"\n" + this.description()
+            );
         }
     }
 

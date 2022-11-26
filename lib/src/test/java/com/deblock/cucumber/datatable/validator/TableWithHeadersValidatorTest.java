@@ -45,6 +45,21 @@ public class TableWithHeadersValidatorTest {
     }
 
     @Test
+    public void should_return_error_when_bad_header_name() {
+        final var validator = new DataTableValidator(List.of(
+                header("header1").mandatory().build(),
+                header("header").mandatory().build()
+        ));
+        final var dataTableHeaders = List.of("header", "header");
+
+        final var exception = Assertions.assertThrows(
+                DataTableDoesNotMatch.class,
+                () -> validator.validate(dataTableHeaders)
+        );
+        Assertions.assertEquals("The following headers are mandatory : \"header1\"\n" + validator.description(), exception.getMessage());
+    }
+
+    @Test
     public void should_not_return_error_when_mandatory_parameter_are_set() {
         final var validator = new DataTableValidator(List.of(
                 header("header1").build(),

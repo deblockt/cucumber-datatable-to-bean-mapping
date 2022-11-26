@@ -1,4 +1,4 @@
-package com.deblock.cucumber.datatable.annoations;
+package com.deblock.cucumber.datatable.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

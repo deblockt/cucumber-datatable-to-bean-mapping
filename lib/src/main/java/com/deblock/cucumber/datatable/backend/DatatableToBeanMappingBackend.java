@@ -1,6 +1,8 @@
 package com.deblock.cucumber.datatable.backend;
 
-import com.deblock.cucumber.datatable.annoations.DataTableWithHeader;
+import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
+import com.deblock.cucumber.datatable.mapper.BeanMapper;
+import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.Glue;
 import io.cucumber.core.backend.Snippet;
@@ -38,8 +40,9 @@ public class DatatableToBeanMappingBackend implements Backend {
     }
 
     private void registerDataTableDefinition(Glue glue, Class<?> aGlueClass) {
-        glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass));
-        glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass));
+        final var validator = new DataTableValidator(new BeanMapper(aGlueClass, null).headers());
+        glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator));
+        glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator));
     }
 
     @Override
