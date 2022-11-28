@@ -2,6 +2,12 @@ package com.deblock.cucumber.datatable.backend;
 
 import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.mapper.BeanMapper;
+import com.deblock.cucumber.datatable.mapper.typemetadata.CompositeTypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.collections.CollectionTypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.custom.CustomTypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticGetTimeService;
+import com.deblock.cucumber.datatable.mapper.typemetadata.date.TemporalTypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.primitive.PrimitiveTypeMetadataFactoryImpl;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.Glue;
@@ -40,9 +46,18 @@ public class DatatableToBeanMappingBackend implements Backend {
     }
 
     private void registerDataTableDefinition(Glue glue, Class<?> aGlueClass) {
-        final var validator = new DataTableValidator(new BeanMapper(aGlueClass, null).headers());
-        glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator));
-        glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator));
+        final var typeMetadataFactory = new CompositeTypeMetadataFactory(
+                CustomTypeMetadataFactory.INSTANCE,
+                new PrimitiveTypeMetadataFactoryImpl(),
+                new TemporalTypeMetadataFactory(new StaticGetTimeService())
+        );
+        typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
+
+
+        BeanMapper beanMapper = new BeanMapper(aGlueClass, typeMetadataFactory);
+        final var validator = new DataTableValidator(beanMapper.headers());
+        glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator, beanMapper));
+        glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator, beanMapper));
     }
 
     @Override

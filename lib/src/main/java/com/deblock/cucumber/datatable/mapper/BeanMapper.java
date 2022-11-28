@@ -66,7 +66,7 @@ public class BeanMapper implements DatatableMapper {
                 column.description(),
                 !column.mandatory(),
                 column.defaultValue(),
-                typeMetadataFactory.build(setters.isEmpty() ? field.getType() : setters.get().getParameterTypes()[0])
+                typeMetadataFactory.build(setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0])
         );
         if (setters.isPresent()) {
             return new FieldData(header, (bean, datatableValue) -> {

@@ -3,8 +3,8 @@ Feature: Mapping
 
   Scenario: Map bean with primitive
     Given a step with only one object
-      | string | integer |
-      | s      | 10      |
+      | string | integer | integers      |
+      | s      | 10      | 1, 3, 4, 5, 6 |
     And a step with a list
       | string | integer |
       | s      | 10      |

@@ -9,6 +9,8 @@ import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanWithPrivateConst
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +89,7 @@ public class BeanMapperTest {
     public static class MockMetadataFactory implements TypeMetadataFactory {
 
         @Override
-        public TypeMetadata build(Class<?> aClass) {
+        public TypeMetadata build(Type type) {
             return new TypeMetadata() {
                 @Override
                 public String typeDescription() {
@@ -101,13 +103,14 @@ public class BeanMapperTest {
 
                 @Override
                 public Object convert(String value) throws ConversionError {
-                    if (aClass.equals(String.class)) {
+                    if (type.equals(String.class)) {
                         return value;
-                    } else if (aClass.equals(Integer.class) || aClass.equals(int.class)) {
+                    } else if (type.equals(Integer.class) || type.equals(int.class)) {
                         return Integer.parseInt(value);
-                    } else {
+                    } else if (type instanceof ParameterizedType ptype && ptype.getRawType().equals(List.class)) {
                         return List.of(value.split(","));
                     }
+                    throw new IllegalArgumentException("ca not convert type " + type);
                 }
             };
         }

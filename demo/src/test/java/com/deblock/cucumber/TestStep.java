@@ -9,11 +9,11 @@ public class TestStep {
 
     @Given("a step with only one object")
     public void step(PrimitiveBean bean) {
-        System.out.println("on est ici: " + bean);
+        System.out.println("read: " + bean);
     }
 
     @Given("a step with a list")
-    public void stepWithList(List<PrimitiveBean> bean) {
-        System.out.println("on est ici: " + bean);
+    public void stepWithList(List<PrimitiveBean> beans) {
+        System.out.println("read: " + beans);
     }
 }
