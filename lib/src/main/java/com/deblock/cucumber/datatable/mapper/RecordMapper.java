@@ -8,6 +8,7 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -46,11 +47,19 @@ public class RecordMapper implements DatatableMapper {
                 .toArray(Class<?>[]::new);
         final var values = new Object[types.length];
 
+        final var nonSetComponentMetadata = new HashSet<>(this.componentMetadataByColumnName.values());
         entry.forEach((name, value) -> {
             final var componentMetadata = componentMetadataByColumnName.get(name);
+            nonSetComponentMetadata.remove(componentMetadata);
             final var convertedValue = componentMetadata.header.typeMetadata().convert(value);
             values[componentMetadata.position] = convertedValue;
         });
+        nonSetComponentMetadata.stream()
+                .filter(componentMetadata -> componentMetadata.header.defaultValue() != null)
+                .forEach(componentMetadata -> {
+                    final var value = componentMetadata.header.typeMetadata().convert(componentMetadata.header.defaultValue());
+                    values[componentMetadata.position] = value;
+                });
 
         try {
             final var constructor = this.clazz.getDeclaredConstructor(types);
@@ -66,8 +75,8 @@ public class RecordMapper implements DatatableMapper {
         return new DatatableHeader(
                 List.of(column.value()),
                 column.description(),
-                !column.mandatory(),
-                column.defaultValue(),
+                !column.mandatory() || !column.defaultValue().isEmpty(),
+                column.defaultValue().isEmpty() ? null : column.defaultValue(),
                 typeMetadataFactory.build(recordComponent.getGenericType())
         );
     }

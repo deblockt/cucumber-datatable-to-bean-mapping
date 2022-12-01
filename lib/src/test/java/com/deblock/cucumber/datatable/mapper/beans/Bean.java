@@ -10,7 +10,7 @@ public class Bean {
     @Column("stringProp")
     public String prop;
 
-    @Column(value = "intProp", description = "a property with primitive int", defaultValue = "10")
+    @Column(value = "intProp", mandatory = false, description = "a property with primitive int", defaultValue = "10")
     public int intProp;
 
     @Column(value = {"other bean", "my bean"}, mandatory = false)
@@ -18,6 +18,9 @@ public class Bean {
 
     @Column(value = "private list")
     private List<String> privateList;
+
+    @Column(value = {"mandatory with default value"}, defaultValue = "default")
+    public String mandatoryWithDefaultValue;
 
     private String nonAnnotatedColumn;
 

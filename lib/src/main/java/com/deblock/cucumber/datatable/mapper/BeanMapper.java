@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -41,9 +42,15 @@ public class BeanMapper implements DatatableMapper {
         final Object instance;
         try {
             instance = this.clazz.getConstructor().newInstance();
+            final var nonSetHeaders = new HashSet<>(this.fieldDataByColumnName.values());
             entry.forEach((columnName, value) -> {
+                nonSetHeaders.remove(this.fieldDataByColumnName.get(columnName));
                 this.fieldDataByColumnName.get(columnName).setter.accept(instance, value);
             });
+            nonSetHeaders.stream()
+                    .filter(it -> it.header.defaultValue() != null)
+                    .forEach(it -> it.setter.accept(instance, it.header.defaultValue()));
+
             return instance;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -64,8 +71,8 @@ public class BeanMapper implements DatatableMapper {
         final var header = new DatatableHeader(
                 List.of(column.value()),
                 column.description(),
-                !column.mandatory(),
-                column.defaultValue(),
+                !column.mandatory() || !column.defaultValue().isEmpty(),
+                column.defaultValue().isEmpty() ? null : column.defaultValue(),
                 typeMetadataFactory.build(setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0])
         );
         if (setters.isPresent()) {

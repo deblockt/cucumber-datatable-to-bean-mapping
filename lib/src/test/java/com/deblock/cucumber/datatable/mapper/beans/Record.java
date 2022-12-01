@@ -7,15 +7,17 @@ import java.util.List;
 
 @DataTableWithHeader
 public record Record(
+    String nonAnnotatedColumn,
     @Column("stringProp")
     String prop,
-    @Column(value = "intProp", description = "a property with primitive int", defaultValue = "10")
+    @Column(value = "intProp", mandatory = false, description = "a property with primitive int", defaultValue = "10")
     int intProp,
     @Column(value = {"other bean", "my bean"}, mandatory = false)
     OtherBean otherBean,
-    String nonAnnotatedColumn,
     @Column(value = "list")
-    List<String> list
+    List<String> list,
+    @Column(value = {"mandatory with default value"}, defaultValue = "default")
+    String mandatoryWithDefaultValue
 ) {
     public static class OtherBean {
 

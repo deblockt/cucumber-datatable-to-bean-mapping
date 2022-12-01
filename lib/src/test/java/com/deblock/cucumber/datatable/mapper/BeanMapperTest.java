@@ -25,10 +25,11 @@ public class BeanMapperTest {
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
-                new DatatableHeader(List.of("stringProp"), "", false, "", null),
-                new DatatableHeader(List.of("intProp"), "a property with primitive int", false, "10", null),
-                new DatatableHeader(List.of("other bean", "my bean"), "", true, "", null),
-                new DatatableHeader(List.of("private list"), "", false, "", null)
+                new DatatableHeader(List.of("stringProp"), "", false, null, null),
+                new DatatableHeader(List.of("intProp"), "a property with primitive int", true, "10", null),
+                new DatatableHeader(List.of("other bean", "my bean"), "", true, null, null),
+                new DatatableHeader(List.of("private list"), "", false, null, null),
+                new DatatableHeader(List.of("mandatory with default value"), "", true, "default", null)
         );
         assertThat(result)
                 .usingRecursiveComparison()
@@ -77,7 +78,21 @@ public class BeanMapperTest {
 
         final var result = (Bean) beanMapper.convert(Map.of(
                 "stringProp", "string",
-                "intProp", "10",
+                "intProp", "101",
+                "private list", "10,11"
+        ));
+
+        assertThat(result.prop).isEqualTo("string");
+        assertThat(result.intProp).isEqualTo(101);
+        assertThat(result.getPrivateList()).isEqualTo(List.of("10", "11"));
+    }
+
+    @Test
+    public void shouldSetDefaultValueIfColumnIsNotSet() {
+        final var beanMapper = new BeanMapper(Bean.class, new MockMetadataFactory());
+
+        final var result = (Bean) beanMapper.convert(Map.of(
+                "stringProp", "string",
                 "private list", "10,11"
         ));
 
@@ -85,6 +100,7 @@ public class BeanMapperTest {
         assertThat(result.intProp).isEqualTo(10);
         assertThat(result.getPrivateList()).isEqualTo(List.of("10", "11"));
     }
+
 
     public static class MockMetadataFactory implements TypeMetadataFactory {
 
@@ -110,7 +126,7 @@ public class BeanMapperTest {
                     } else if (type instanceof ParameterizedType ptype && ptype.getRawType().equals(List.class)) {
                         return List.of(value.split(","));
                     }
-                    throw new IllegalArgumentException("ca not convert type " + type);
+                    throw new IllegalArgumentException("can not convert type " + type);
                 }
             };
         }

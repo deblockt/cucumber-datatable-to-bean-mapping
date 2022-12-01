@@ -21,10 +21,11 @@ public class RecordMapperTest {
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
-                new DatatableHeader(List.of("stringProp"), "", false, "", null),
-                new DatatableHeader(List.of("intProp"), "a property with primitive int", false, "10", null),
-                new DatatableHeader(List.of("other bean", "my bean"), "", true, "", null),
-                new DatatableHeader(List.of("list"), "", false, "", null)
+                new DatatableHeader(List.of("stringProp"), "", false, null, null),
+                new DatatableHeader(List.of("intProp"), "a property with primitive int", true, "10", null),
+                new DatatableHeader(List.of("other bean", "my bean"), "", true, null, null),
+                new DatatableHeader(List.of("list"), "", false, null, null),
+                new DatatableHeader(List.of("mandatory with default value"), "", true, "default", null)
         );
         assertThat(result)
                 .usingRecursiveComparison()
@@ -38,7 +39,23 @@ public class RecordMapperTest {
 
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
-                "intProp", "10",
+                "intProp", "101",
+                "list", "10,11"
+        ));
+
+        assertThat(result.prop()).isEqualTo("string");
+        assertThat(result.intProp()).isEqualTo(101);
+        assertThat(result.list()).isEqualTo(List.of("10", "11"));
+        assertThat(result.otherBean()).isNull();
+        assertThat(result.nonAnnotatedColumn()).isNull();
+    }
+
+    @Test
+    public void shouldUseDefaultValueWhenColumnIsNotPresent() {
+        final var beanMapper = new RecordMapper(Record.class, new MockMetadataFactory());
+
+        final var result = (Record) beanMapper.convert(Map.of(
+                "stringProp", "string",
                 "list", "10,11"
         ));
 
