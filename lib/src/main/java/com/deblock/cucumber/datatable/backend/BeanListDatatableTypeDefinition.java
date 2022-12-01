@@ -1,6 +1,6 @@
 package com.deblock.cucumber.datatable.backend;
 
-import com.deblock.cucumber.datatable.mapper.BeanMapper;
+import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.DataTableTypeDefinition;
 import io.cucumber.datatable.DataTableType;
@@ -10,12 +10,12 @@ public class BeanListDatatableTypeDefinition implements DataTableTypeDefinition 
 
     private final Class<?> glueClass;
     private final DataTableValidator validator;
-    private final BeanMapper beanMapper;
+    private final DatatableMapper datatableMapper;
 
-    public BeanListDatatableTypeDefinition(Class<?> glueClass, DataTableValidator validator, BeanMapper beanMapper) {
+    public BeanListDatatableTypeDefinition(Class<?> glueClass, DataTableValidator validator, DatatableMapper datatableMapper) {
         this.glueClass = glueClass;
         this.validator = validator;
-        this.beanMapper = beanMapper;
+        this.datatableMapper = datatableMapper;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class BeanListDatatableTypeDefinition implements DataTableTypeDefinition 
                 this.glueClass,
                 (TableEntryTransformer<Object>) entry -> {
                     this.validator.validate(entry.keySet());
-                    return this.beanMapper.convert(entry);
+                    return this.datatableMapper.convert(entry);
                 }
         );
     }

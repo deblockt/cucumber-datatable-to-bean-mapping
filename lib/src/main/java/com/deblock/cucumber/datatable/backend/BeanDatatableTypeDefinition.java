@@ -1,6 +1,6 @@
 package com.deblock.cucumber.datatable.backend;
 
-import com.deblock.cucumber.datatable.mapper.BeanMapper;
+import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.DataTableTypeDefinition;
 import io.cucumber.datatable.DataTableType;
@@ -11,12 +11,12 @@ import java.util.HashMap;
 public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
     private final Class<?> glueClass;
     private final DataTableValidator validator;
-    private final BeanMapper beanMapper;
+    private final DatatableMapper datatableMapper;
 
-    public BeanDatatableTypeDefinition(Class<?> glueClass, DataTableValidator validator, BeanMapper beanMapper) {
+    public BeanDatatableTypeDefinition(Class<?> glueClass, DataTableValidator validator, DatatableMapper datatableMapper) {
         this.glueClass = glueClass;
         this.validator = validator;
-        this.beanMapper = beanMapper;
+        this.datatableMapper = datatableMapper;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
                         for (var i = 0; i < table.width(); ++i) {
                             map.put(table.row(0).get(i), table.row(1).get(i));
                         }
-                        return this.beanMapper.convert(map);
+                        return this.datatableMapper.convert(map);
                     } catch (Exception e) {
                         // table using 2 columns mode
                         this.validator.validate(table.column(0));
@@ -40,7 +40,7 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
                         for (var i = 0; i < table.height(); ++i) {
                             map.put(table.column(0).get(i), table.column(1).get(i));
                         }
-                        return this.beanMapper.convert(map);
+                        return this.datatableMapper.convert(map);
                     }
                 });
     }

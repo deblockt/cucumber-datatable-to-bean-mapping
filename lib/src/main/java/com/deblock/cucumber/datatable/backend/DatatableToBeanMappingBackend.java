@@ -1,7 +1,8 @@
 package com.deblock.cucumber.datatable.backend;
 
 import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
-import com.deblock.cucumber.datatable.mapper.BeanMapper;
+import com.deblock.cucumber.datatable.mapper.DatatableMapper;
+import com.deblock.cucumber.datatable.mapper.MapperFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.CompositeTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.collections.CollectionTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.custom.CustomTypeMetadataFactory;
@@ -24,9 +25,11 @@ import static io.cucumber.core.resource.ClasspathSupport.CLASSPATH_SCHEME;
 
 public class DatatableToBeanMappingBackend implements Backend {
     private final ClasspathScanner classFinder;
+    private final MapperFactory mapperFactory;
 
-    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier) {
+    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, MapperFactory mapperFactory) {
         this.classFinder = new ClasspathScanner(classLoaderSupplier);
+        this.mapperFactory = mapperFactory;
     }
 
     @Override
@@ -54,10 +57,10 @@ public class DatatableToBeanMappingBackend implements Backend {
         typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
 
 
-        BeanMapper beanMapper = new BeanMapper(aGlueClass, typeMetadataFactory);
-        final var validator = new DataTableValidator(beanMapper.headers());
-        glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator, beanMapper));
-        glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator, beanMapper));
+        DatatableMapper datatableMapper = this.mapperFactory.build(aGlueClass, typeMetadataFactory);
+        final var validator = new DataTableValidator(datatableMapper.headers());
+        glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator, datatableMapper));
+        glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator, datatableMapper));
     }
 
     @Override

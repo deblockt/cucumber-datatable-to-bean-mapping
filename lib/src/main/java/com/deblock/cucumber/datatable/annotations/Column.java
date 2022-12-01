@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * The mapped name can be defined by value field.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER})
 public @interface Column {
     String[] value() default {};
 

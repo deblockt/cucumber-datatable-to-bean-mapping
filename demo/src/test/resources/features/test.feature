@@ -9,6 +9,10 @@ Feature: Mapping
       | string | integer |
       | s      | 10      |
       | a      | 11      |
+    And a step with a list of record
+      | string | integer | integers |
+      | s      | 10      | 1        |
+      | a      | 11      | 3, 1039  |
 
 
   Scenario: Failed due to typo on column
