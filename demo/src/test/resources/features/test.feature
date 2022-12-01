@@ -11,7 +11,7 @@ Feature: Mapping
       | a      | 11      |
     And a step with a list of record
       | string | integer | integers |
-      | s      | 10      | 1        |
+      | s      | 10      |          |
       | a      | 11      | 3, 1039  |
 
 

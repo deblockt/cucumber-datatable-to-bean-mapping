@@ -7,6 +7,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,9 +23,9 @@ public class BeanListDatatableTypeTest {
 
         typeDefinition.dataTableType().transform(
                 List.of(
-                        List.of("header", "header2"),
-                        List.of("value", "value2"),
-                        List.of("value3", "value4")
+                        row("header", "header2"),
+                        row("value", "value2"),
+                        row("value3", "value4")
                 )
         );
 
@@ -41,5 +43,30 @@ public class BeanListDatatableTypeTest {
         final var result = typeDefinition.dataTableType().transform(List.of());
 
         Assertions.assertThat(result).isEqualTo(List.of());
+    }
+    @Test
+    public void shouldIgnoreNullValues() {
+        final var validator = Mockito.mock(DataTableValidator.class);
+        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var typeDefinition = new BeanListDatatableTypeDefinition(Bean.class, validator, beanMapper);
+
+        typeDefinition.dataTableType().transform(
+                List.of(
+                        row("header", "header2"),
+                        row("value", "value2"),
+                        row("value3", null)
+                )
+        );
+
+        Mockito.verify(validator).validate(Set.of("header", "header2"));
+        Mockito.verify(validator).validate(Set.of("header"));
+        Mockito.verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
+        Mockito.verify(beanMapper).convert(Map.of("header", "value3"));
+    }
+
+    private static List<String> row(String... strings) {
+        final var list = new ArrayList<String>();
+        Collections.addAll(list, strings);
+        return list;
     }
 }

@@ -6,6 +6,9 @@ import io.cucumber.core.backend.DataTableTypeDefinition;
 import io.cucumber.datatable.DataTableType;
 import io.cucumber.datatable.TableEntryTransformer;
 
+import java.util.Collections;
+import java.util.HashMap;
+
 public class BeanListDatatableTypeDefinition implements DataTableTypeDefinition {
 
     private final Class<?> glueClass;
@@ -23,8 +26,10 @@ public class BeanListDatatableTypeDefinition implements DataTableTypeDefinition 
         return new DataTableType(
                 this.glueClass,
                 (TableEntryTransformer<Object>) entry -> {
-                    this.validator.validate(entry.keySet());
-                    return this.datatableMapper.convert(entry);
+                    final var map =  new HashMap<>(entry);
+                    map.values().removeAll(Collections.singleton(null));
+                    this.validator.validate(map.keySet());
+                    return this.datatableMapper.convert(map);
                 }
         );
     }

@@ -6,8 +6,11 @@ import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BeanDatatableTypeDefinitionTest {
 
@@ -19,12 +22,12 @@ public class BeanDatatableTypeDefinitionTest {
 
         typeDefinition.dataTableType().transform(
                 List.of(
-                        List.of("header", "header2"),
-                        List.of("value", "value2")
+                        row("header", "header2"),
+                        row("value", "value2")
                 )
         );
 
-        Mockito.verify(validator).validate(List.of("header", "header2"));
+        Mockito.verify(validator).validate(Set.of("header", "header2"));
         Mockito.verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
     }
 
@@ -33,16 +36,42 @@ public class BeanDatatableTypeDefinitionTest {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanMapper.class);
         final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
-        Mockito.doThrow(new RuntimeException("error")).when(validator).validate(List.of("header", "value"));
+        Mockito.doThrow(new RuntimeException("error")).when(validator).validate(Set.of("header", "value"));
 
         typeDefinition.dataTableType().transform(
                 List.of(
-                        List.of("header", "value"),
-                        List.of("header2", "value2")
+                        row("header", "value"),
+                        row("header2", "value2")
                 )
         );
 
-        Mockito.verify(validator).validate(List.of("header", "header2"));
+        Mockito.verify(validator).validate(Set.of("header", "header2"));
         Mockito.verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
+    }
+
+
+    @Test
+    public void shouldRemoveNullColumns() {
+        final var validator = Mockito.mock(DataTableValidator.class);
+        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
+        Mockito.doThrow(new RuntimeException("error")).when(validator).validate(Set.of("header"));
+
+        typeDefinition.dataTableType().transform(
+                List.of(
+                        row("header", "value"),
+                        row("header2", null),
+                        row("header3", "value 2")
+                )
+        );
+
+        Mockito.verify(validator).validate(Set.of("header"));
+        Mockito.verify(beanMapper).convert(Map.of("header", "value", "header3", "value 2"));
+    }
+
+    private static List<String> row(String... strings) {
+        final var list = new ArrayList<String>();
+        Collections.addAll(list, strings);
+        return list;
     }
 }

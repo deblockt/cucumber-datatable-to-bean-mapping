@@ -6,7 +6,9 @@ import io.cucumber.core.backend.DataTableTypeDefinition;
 import io.cucumber.datatable.DataTableType;
 import io.cucumber.datatable.TableTransformer;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
     private final Class<?> glueClass;
@@ -24,24 +26,25 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
         return new DataTableType(
                 this.glueClass,
                 (TableTransformer<Object>) table -> {
+                    Map<String, String> map;
                     try {
+                        map = new HashMap<>();
                         // table using only one row
-                        this.validator.validate(table.row(0));
-                        final var map = new HashMap<String, String>();
                         for (var i = 0; i < table.width(); ++i) {
                             map.put(table.row(0).get(i), table.row(1).get(i));
                         }
-                        return this.datatableMapper.convert(map);
+                        map.values().removeAll(Collections.singleton(null));
+                        this.validator.validate(map.keySet());
                     } catch (Exception e) {
+                        map = new HashMap<>();
                         // table using 2 columns mode
-                        this.validator.validate(table.column(0));
-
-                        final var map = new HashMap<String, String>();
                         for (var i = 0; i < table.height(); ++i) {
                             map.put(table.column(0).get(i), table.column(1).get(i));
                         }
-                        return this.datatableMapper.convert(map);
+                        map.values().removeAll(Collections.singleton(null));
+                        this.validator.validate(map.keySet());
                     }
+                    return this.datatableMapper.convert(map);
                 });
     }
 
