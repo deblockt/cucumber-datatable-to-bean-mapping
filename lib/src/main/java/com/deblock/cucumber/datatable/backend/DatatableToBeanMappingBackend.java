@@ -8,6 +8,7 @@ import com.deblock.cucumber.datatable.mapper.typemetadata.collections.Collection
 import com.deblock.cucumber.datatable.mapper.typemetadata.custom.CustomTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticGetTimeService;
 import com.deblock.cucumber.datatable.mapper.typemetadata.date.TemporalTypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.enumeration.EnumTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.primitive.PrimitiveTypeMetadataFactoryImpl;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
@@ -52,7 +53,8 @@ public class DatatableToBeanMappingBackend implements Backend {
         final var typeMetadataFactory = new CompositeTypeMetadataFactory(
                 CustomTypeMetadataFactory.INSTANCE,
                 new PrimitiveTypeMetadataFactoryImpl(),
-                new TemporalTypeMetadataFactory(new StaticGetTimeService())
+                new TemporalTypeMetadataFactory(new StaticGetTimeService()),
+                new EnumTypeMetadataFactory()
         );
         typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
 
