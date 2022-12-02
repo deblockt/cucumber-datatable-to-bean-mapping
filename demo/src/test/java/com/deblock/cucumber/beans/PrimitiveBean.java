@@ -17,12 +17,20 @@ public class PrimitiveBean {
     @Column(value = "integers", mandatory = false)
     public List<Integer> integers;
 
+    @Column(value = "enumValue", defaultValue = "VALUE2")
+    public EnumValue enumValue;
+
+    @Column(value = "customDTO", mandatory = false)
+    public CustomDTO customDTO;
+
     @Override
     public String toString() {
         return "PrimitiveBean{" +
                 "string='" + string + '\'' +
                 ", integer=" + integer +
                 ", integers=" + integers +
+                ", enumValue=" + enumValue +
+                ", customDTO=" + customDTO +
                 '}';
     }
 }

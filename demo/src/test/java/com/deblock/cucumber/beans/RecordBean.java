@@ -12,6 +12,10 @@ public record RecordBean(
     @Column(value = "integer")
     Integer integer,
     @Column(value = "integers", mandatory = false)
-    List<Integer> integers
+    List<Integer> integers,
+    @Column(value = "enumValue", defaultValue = "VALUE2")
+    EnumValue enumValue,
+    @Column(value = "customDTO", mandatory = false)
+    CustomDTO customDTO
 ) {
 }

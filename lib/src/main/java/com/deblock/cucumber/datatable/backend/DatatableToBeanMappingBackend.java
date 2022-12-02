@@ -27,6 +27,7 @@ import static io.cucumber.core.resource.ClasspathSupport.CLASSPATH_SCHEME;
 public class DatatableToBeanMappingBackend implements Backend {
     private final ClasspathScanner classFinder;
     private final MapperFactory mapperFactory;
+    private CompositeTypeMetadataFactory typeMetadataFactory;
 
     public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, MapperFactory mapperFactory) {
         this.classFinder = new ClasspathScanner(classLoaderSupplier);
@@ -35,6 +36,15 @@ public class DatatableToBeanMappingBackend implements Backend {
 
     @Override
     public void loadGlue(Glue glue, List<URI> gluePaths) {
+        final var customerTypeMetadataFactory = new CustomTypeMetadataFactory(this.classFinder, gluePaths);
+        this.typeMetadataFactory = new CompositeTypeMetadataFactory(
+            customerTypeMetadataFactory,
+            new PrimitiveTypeMetadataFactoryImpl(),
+            new TemporalTypeMetadataFactory(new StaticGetTimeService()),
+            new EnumTypeMetadataFactory()
+        );
+        typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
+
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))
                 .map(ClasspathSupport::packageName)
@@ -50,16 +60,7 @@ public class DatatableToBeanMappingBackend implements Backend {
     }
 
     private void registerDataTableDefinition(Glue glue, Class<?> aGlueClass) {
-        final var typeMetadataFactory = new CompositeTypeMetadataFactory(
-                CustomTypeMetadataFactory.INSTANCE,
-                new PrimitiveTypeMetadataFactoryImpl(),
-                new TemporalTypeMetadataFactory(new StaticGetTimeService()),
-                new EnumTypeMetadataFactory()
-        );
-        typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
-
-
-        DatatableMapper datatableMapper = this.mapperFactory.build(aGlueClass, typeMetadataFactory);
+        DatatableMapper datatableMapper = this.mapperFactory.build(aGlueClass, this.typeMetadataFactory);
         final var validator = new DataTableValidator(datatableMapper.headers());
         glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator, datatableMapper));
         glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator, datatableMapper));

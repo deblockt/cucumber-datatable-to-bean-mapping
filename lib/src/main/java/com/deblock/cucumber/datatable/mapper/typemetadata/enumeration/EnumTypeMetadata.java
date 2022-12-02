@@ -17,13 +17,21 @@ public class EnumTypeMetadata implements TypeMetadata {
 
         try {
             final var method = clazz.getDeclaredMethod("values");
-            final var values = method.invoke(null);
+            final var values = validateValues((Object[])method.invoke(null));
             this.valuesString = Arrays.stream(((Object[]) values)).map(Object::toString).collect(Collectors.joining(", "));
             this.firstValue = ((Object[]) values)[0].toString();
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
+
+    private Object[] validateValues(Object[] values) {
+        if (values.length == 0) {
+            throw new IllegalArgumentException("enum " + this.clazz.getSimpleName() + " should have at least one value");
+        }
+        return values;
+    }
+
 
     @Override
     public String typeDescription() {

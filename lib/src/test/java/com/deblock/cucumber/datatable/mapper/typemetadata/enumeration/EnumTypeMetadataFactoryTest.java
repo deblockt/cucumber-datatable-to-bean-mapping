@@ -26,6 +26,6 @@ public class EnumTypeMetadataFactoryTest {
     }
 
     private enum MyEnum {
-
+        VALUE
     }
 }
