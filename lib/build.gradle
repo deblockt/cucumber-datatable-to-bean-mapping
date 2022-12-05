@@ -1,11 +1,16 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+
+    withJavadocJar()
+    withSourcesJar()
 }
 
 dependencies {
@@ -18,4 +23,56 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+// Publish to oss sonatype repo
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            archivesBaseName = 'cucumber-datatable-to-bean-mapping'
+            artifactId = 'cucumber-datatable-to-bean-mapping'
+            groupId = 'io.github.deblockt'
+            version = '0.0.1'
+
+            from components.java
+            pom {
+                name = 'cucumber datatable to bean mapping'
+                description = 'A library to perform automatic mapping between cucumber datatable and Java bean.'
+                url = 'https://github.com/deblockt/cucumber-datatable-to-bean-mapping'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'deblockt'
+                        name = 'Thomas Deblock'
+                        email = 'deblock.thomas.62@gmail.com'
+                        url = 'https://github.com/deblockt'
+                    }
+                }
+
+                scm {
+                    connection = 'https://github.com/deblockt/cucumber-datatable-to-bean-mapping.git'
+                    developerConnection = 'https://github.com/deblockt/cucumber-datatable-to-bean-mapping.git'
+                    url = 'https://github.com/deblockt/cucumber-datatable-to-bean-mapping'
+                }
+            }
+        }
+    }
+
+    signing {
+        def signingKey = findProperty("signingKey")
+        def signingPassword = findProperty("signingPassword")
+        if (signingKey !== null && signingPassword != null) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
+
+        sign publishing.publications.mavenJava
+    }
 }
