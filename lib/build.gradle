@@ -30,10 +30,8 @@ test {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            archivesBaseName = 'cucumber-datatable-to-bean-mapping'
             artifactId = 'cucumber-datatable-to-bean-mapping'
             groupId = 'io.github.deblockt'
-            version = '0.0.1'
 
             from components.java
             pom {
