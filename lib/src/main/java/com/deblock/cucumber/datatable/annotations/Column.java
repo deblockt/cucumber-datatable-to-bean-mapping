@@ -12,7 +12,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER})
 public @interface Column {
-    String[] value() default {};
+    /**
+     * the column name, you can specify multiple value to allow to use multiple column names
+     */
+    String[] value();
 
     String description() default "";
 
