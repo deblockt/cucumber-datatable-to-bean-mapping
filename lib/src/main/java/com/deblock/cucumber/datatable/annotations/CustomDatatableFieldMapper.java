@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  *   - be defined on glue package
  *
  * <pre>
- *   @CustomDatatableFieldMapper(sample = "cucumberCode", typeDescription = "Customer")
+ *   \@CustomDatatableFieldMapper(sample = "cucumberCode", typeDescription = "Customer")
  *   public static Customer customerMapper(String customerCode) {
  *     return TestContext.getCustomer(customerCode);
  *   }
