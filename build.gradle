@@ -1,6 +1,7 @@
 plugins {
     id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
     id 'me.qoomon.git-versioning' version '6.3.6'
+    id 'java'
 }
 group = 'io.github.deblockt'
 
@@ -22,6 +23,12 @@ gitVersioning.apply {
 allprojects {
     repositories {
         mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
     }
 }
 

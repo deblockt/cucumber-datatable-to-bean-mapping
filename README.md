@@ -45,10 +45,18 @@ record Bean(
 And this step definition:
 
 ``` java
+// java style
 @Given("a step with a datatable")
 public void stepWithList(List<Bean> beans) {
     System.out.println("read: " + beans);
 }
+
+// java-8 style
+Given(
+    "a step with a datatable", 
+    (DataTable datatable) -> System.out.println("read: " + datatable.asList(Bean.class))
+);
+
 ```
 
 You can write this step:
