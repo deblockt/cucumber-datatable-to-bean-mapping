@@ -22,7 +22,7 @@ public class CompositeTypeMetadataFactory implements TypeMetadataFactory {
                 .map(factory -> factory.build(type))
                 .filter(Objects::nonNull)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("can not find any converter for class " + type + ". You can define your own converter using CustomTypeMetadataFactory.addCustomType"));
+                .orElseThrow(() -> new IllegalArgumentException("can not find any converter for class " + type + ". You can define your own converter using @CustomDatatableFieldMapper"));
     }
 
     public void add(TypeMetadataFactory typeMetadataFactory) {

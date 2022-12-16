@@ -1,5 +1,7 @@
 .idea
 .gradle
 
-lib/build
-demo/build
+**/build
+**/target
+
+**/.DS_Store

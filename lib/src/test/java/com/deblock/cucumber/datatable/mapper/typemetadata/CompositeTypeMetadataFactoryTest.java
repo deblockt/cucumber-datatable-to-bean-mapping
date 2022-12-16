@@ -37,7 +37,7 @@ public class CompositeTypeMetadataFactoryTest {
 
         final var exception = assertThrows(IllegalArgumentException.class, () -> typeMetadataFactory.build(Integer.class));
 
-        assertThat(exception.getMessage()).isEqualTo("can not find any converter for class class java.lang.Integer. You can define your own converter using CustomTypeMetadataFactory.addCustomType");
+        assertThat(exception.getMessage()).isEqualTo("can not find any converter for class class java.lang.Integer. You can define your own converter using @CustomDatatableFieldMapper");
     }
 
     @Test
