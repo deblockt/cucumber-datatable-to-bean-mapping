@@ -56,6 +56,13 @@ public class DateTimeTypeMetadataTest {
     }
 
     @Test
+    public void shouldAllowToAdd1HourAtNow() {
+        final var result = typeMetadata.convert("now + 1 hour");
+
+        assertThat(result).isEqualTo(NOW.plusHours(1));
+    }
+
+    @Test
     public void shouldAllowToAddXDayAtNow() {
         final var result = typeMetadata.convert("now + 1 day");
 

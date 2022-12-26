@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class DateTimeTypeMetadata implements TypeMetadata {
-    private final static Pattern REGEX = Pattern.compile("now(?:\\s*(?<operator>[+-])\\s*(?<amount>\\d+)\\s*(?<unit>days?|weeks?|years?|millis?|minutes?|seconds?|hour?s|months?))?");
+    private final static Pattern REGEX = Pattern.compile("now(?:\\s*(?<operator>[+-])\\s*(?<amount>\\d+)\\s*(?<unit>days?|weeks?|years?|millis?|minutes?|seconds?|hours?|months?))?");
 
     private final Supplier<Temporal> nowSupplier;
     private final Function<String, Temporal> parser;
