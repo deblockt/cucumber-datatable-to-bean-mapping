@@ -140,3 +140,45 @@ public static Customer customerMapper(String customerCode) {
     return TestContext.getCustomer(customerCode);
 }
 ```
+
+## Usage on a fat/uber jar
+
+If you need to build an executable fat jar to run your cucumber, you should add some configuration to work with this library.
+
+This library use the [java SPI definition](https://www.baeldung.com/java-spi) to inject some class on cucumber runtime.
+
+When you build a fat jar, this configuration can be override by cucumber definition, so we need to merge configuration files.
+
+### Gradle 
+
+Using gradle you can use the [shadow plugin](https://imperceptiblethoughts.com/shadow/introduction/) to solve this issue.
+You can read [this chapter](https://imperceptiblethoughts.com/shadow/configuration/merging/#merging-service-descriptor-files) to see how to merge configuration files.
+
+example of task configuration:
+``` gradle
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+shadowJar {
+    // specify jar name informations
+    archiveBaseName.set('cucumber-tests')
+    archiveClassifier.set('')
+
+    // add main and tests sources on jar
+    from sourceSets.main.output
+    from sourceSets.test.output
+    configurations = [
+        project.configurations.compileClasspath,
+        project.configurations.cucumberRuntime
+    ]
+    
+    // specify the cucumber Main class
+    manifest {
+        attributes "Main-Class": "io.cucumber.core.cli.Main"
+    }
+
+    // merge service files. Need to work with this lib.
+    mergeServiceFiles()
+}
+```
