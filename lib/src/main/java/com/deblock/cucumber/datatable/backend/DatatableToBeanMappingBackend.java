@@ -9,6 +9,7 @@ import com.deblock.cucumber.datatable.mapper.typemetadata.custom.CustomTypeMetad
 import com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticGetTimeService;
 import com.deblock.cucumber.datatable.mapper.typemetadata.date.TemporalTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.enumeration.EnumTypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.map.MapTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.primitive.PrimitiveTypeMetadataFactoryImpl;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
@@ -36,14 +37,15 @@ public class DatatableToBeanMappingBackend implements Backend {
 
     @Override
     public void loadGlue(Glue glue, List<URI> gluePaths) {
-        final var customerTypeMetadataFactory = new CustomTypeMetadataFactory(this.classFinder, gluePaths);
+        final var customTypeMetadataFactory = new CustomTypeMetadataFactory(this.classFinder, gluePaths);
         this.typeMetadataFactory = new CompositeTypeMetadataFactory(
-            customerTypeMetadataFactory,
+            customTypeMetadataFactory,
             new PrimitiveTypeMetadataFactoryImpl(),
             new TemporalTypeMetadataFactory(new StaticGetTimeService()),
-            new EnumTypeMetadataFactory()
+            new EnumTypeMetadataFactory(),
+            new MapTypeMetadataFactory()
         );
-        typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
+        this.typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
 
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))
