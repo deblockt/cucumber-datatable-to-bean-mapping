@@ -10,9 +10,9 @@ Feature: Mapping
       | s      | 10      |           |
       | a      | 11      | VALUE1    |
     And a step with a list of record
-      | string | integer | integers | customDTO |
-      | s      | 10      |          |           |
-      | a      | 11      | 3, 1039  | test      |
+      | string | integer | integers | customDTO | aMap       |
+      | s      | 10      |          |           |            |
+      | a      | 11      | 3, 1039  | test      | {"a": "b"} |
 
 
   Scenario: Failed due to typo on column
