@@ -73,11 +73,9 @@ public class RecordMapper implements DatatableMapper {
         final var column = recordComponent.getAnnotation(Column.class);
 
         return new DatatableHeader(
-                List.of(column.value()),
-                column.description(),
-                !column.mandatory() || !column.defaultValue().isEmpty(),
-                column.defaultValue().isEmpty() ? null : column.defaultValue(),
-                typeMetadataFactory.build(recordComponent.getGenericType())
+            column,
+            recordComponent.getName(),
+            typeMetadataFactory.build(recordComponent.getGenericType())
         );
     }
 

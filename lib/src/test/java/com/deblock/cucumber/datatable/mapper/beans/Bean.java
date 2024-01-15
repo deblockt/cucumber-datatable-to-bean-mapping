@@ -22,6 +22,9 @@ public class Bean {
     @Column(value = {"mandatory with default value"}, defaultValue = "default")
     public String mandatoryWithDefaultValue;
 
+    @Column
+    public String fieldWithDefaultName;
+
     private String nonAnnotatedColumn;
 
     public static class OtherBean {

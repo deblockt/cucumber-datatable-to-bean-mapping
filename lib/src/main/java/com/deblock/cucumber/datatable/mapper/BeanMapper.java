@@ -69,10 +69,8 @@ public class BeanMapper implements DatatableMapper {
                 .findFirst();
 
         final var header = new DatatableHeader(
-                List.of(column.value()),
-                column.description(),
-                !column.mandatory() || !column.defaultValue().isEmpty(),
-                column.defaultValue().isEmpty() ? null : column.defaultValue(),
+                column,
+                field.getName(),
                 typeMetadataFactory.build(setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0])
         );
         if (setters.isPresent()) {
