@@ -15,7 +15,7 @@ public @interface Column {
     /**
      * the column name, you can specify multiple value to allow to use multiple column names
      */
-    String[] value();
+    String[] value() default {};
 
     String description() default "";
 

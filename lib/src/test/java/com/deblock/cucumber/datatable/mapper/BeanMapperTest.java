@@ -29,7 +29,8 @@ public class BeanMapperTest {
                 new DatatableHeader(List.of("intProp"), "a property with primitive int", true, "10", null),
                 new DatatableHeader(List.of("other bean", "my bean"), "", true, null, null),
                 new DatatableHeader(List.of("private list"), "", false, null, null),
-                new DatatableHeader(List.of("mandatory with default value"), "", true, "default", null)
+                new DatatableHeader(List.of("mandatory with default value"), "", true, "default", null),
+                new DatatableHeader(List.of("field with default name", "fieldWithDefaultName"), "", false, null, null)
         );
         assertThat(result)
                 .usingRecursiveComparison()
@@ -79,10 +80,12 @@ public class BeanMapperTest {
         final var result = (Bean) beanMapper.convert(Map.of(
                 "stringProp", "string",
                 "intProp", "101",
-                "private list", "10,11"
+                "private list", "10,11",
+                "field with default name", "test"
         ));
 
         assertThat(result.prop).isEqualTo("string");
+        assertThat(result.fieldWithDefaultName).isEqualTo("test");
         assertThat(result.intProp).isEqualTo(101);
         assertThat(result.getPrivateList()).isEqualTo(List.of("10", "11"));
     }
@@ -98,6 +101,7 @@ public class BeanMapperTest {
 
         assertThat(result.prop).isEqualTo("string");
         assertThat(result.intProp).isEqualTo(10);
+        assertThat(result.fieldWithDefaultName).isEqualTo(null);
         assertThat(result.getPrivateList()).isEqualTo(List.of("10", "11"));
     }
 

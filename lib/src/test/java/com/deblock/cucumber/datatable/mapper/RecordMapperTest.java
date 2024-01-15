@@ -25,6 +25,7 @@ public class RecordMapperTest {
                 new DatatableHeader(List.of("intProp"), "a property with primitive int", true, "10", null),
                 new DatatableHeader(List.of("other bean", "my bean"), "", true, null, null),
                 new DatatableHeader(List.of("list"), "", false, null, null),
+                new DatatableHeader(List.of("field with default name", "fieldWithDefaultName"), "", false, null, null),
                 new DatatableHeader(List.of("mandatory with default value"), "", true, "default", null)
         );
         assertThat(result)
@@ -40,10 +41,12 @@ public class RecordMapperTest {
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
                 "intProp", "101",
-                "list", "10,11"
+                "list", "10,11",
+                "field with default name", "test"
         ));
 
         assertThat(result.prop()).isEqualTo("string");
+        assertThat(result.fieldWithDefaultName()).isEqualTo("test");
         assertThat(result.intProp()).isEqualTo(101);
         assertThat(result.list()).isEqualTo(List.of("10", "11"));
         assertThat(result.otherBean()).isNull();
@@ -63,6 +66,7 @@ public class RecordMapperTest {
         assertThat(result.intProp()).isEqualTo(10);
         assertThat(result.list()).isEqualTo(List.of("10", "11"));
         assertThat(result.otherBean()).isNull();
+        assertThat(result.fieldWithDefaultName()).isNull();
         assertThat(result.nonAnnotatedColumn()).isNull();
     }
 

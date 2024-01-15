@@ -16,6 +16,8 @@ public record Record(
     OtherBean otherBean,
     @Column(value = "list")
     List<String> list,
+    @Column()
+    String fieldWithDefaultName,
     @Column(value = {"mandatory with default value"}, defaultValue = "default")
     String mandatoryWithDefaultValue
 ) {
