@@ -19,7 +19,8 @@ public record Record(
     @Column()
     String fieldWithDefaultName,
     @Column(value = {"mandatory with default value"}, defaultValue = "default")
-    String mandatoryWithDefaultValue
+    String mandatoryWithDefaultValue,
+    String nonColumn
 ) {
     public static class OtherBean {
 
