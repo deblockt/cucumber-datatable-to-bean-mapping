@@ -8,8 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -18,7 +16,7 @@ import static java.util.Locale.ENGLISH;
 
 public class BeanMapper implements DatatableMapper {
     private final List<DatatableHeader> headers = new ArrayList<>();
-    private final Map<String, FieldData> fieldDataByColumnName = new HashMap<>();
+    private final List<FieldData> fieldDataByColumnName = new ArrayList<>();
     private final Class<?> clazz;
 
     public BeanMapper(Class<?> clazz, TypeMetadataFactory typeMetadataFactory) {
@@ -27,7 +25,7 @@ public class BeanMapper implements DatatableMapper {
                 .filter(field -> field.isAnnotationPresent(Column.class))
                 .map(field -> this.buildFieldData(field, typeMetadataFactory))
                 .forEach(fieldData -> {
-                    fieldData.header.names().forEach(name -> fieldDataByColumnName.put(name, fieldData));
+                    fieldDataByColumnName.add(fieldData);
                     this.headers.add(fieldData.header);
                 });
     }
@@ -42,15 +40,7 @@ public class BeanMapper implements DatatableMapper {
         final Object instance;
         try {
             instance = this.clazz.getConstructor().newInstance();
-            final var nonSetHeaders = new HashSet<>(this.fieldDataByColumnName.values());
-            entry.forEach((columnName, value) -> {
-                nonSetHeaders.remove(this.fieldDataByColumnName.get(columnName));
-                this.fieldDataByColumnName.get(columnName).setter.accept(instance, value);
-            });
-            nonSetHeaders.stream()
-                    .filter(it -> it.header.defaultValue() != null)
-                    .forEach(it -> it.setter.accept(instance, it.header.defaultValue()));
-
+            this.fieldDataByColumnName.forEach(it -> it.setter.accept(instance, entry));
             return instance;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -74,19 +64,35 @@ public class BeanMapper implements DatatableMapper {
                 typeMetadataFactory.build(setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0])
         );
         if (setters.isPresent()) {
-            return new FieldData(header, (bean, datatableValue) -> {
-                try {
-                    setters.get().invoke(bean, header.typeMetadata().convert(datatableValue));
-                } catch (InvocationTargetException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
+            return new FieldData(header, (bean, entry) -> {
+                var cellValue = header.defaultValue();
+                for (final var headerName : header.names()) {
+                    if (entry.containsKey(headerName)) {
+                        cellValue = entry.get(headerName);
+                    }
+                }
+                if (cellValue != null) {
+                    try {
+                        setters.get().invoke(bean, header.typeMetadata().convert(cellValue));
+                    } catch (InvocationTargetException | IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         } else if (Modifier.isPublic(field.getModifiers())) {
-            return new FieldData(header, (bean, datatableValue) -> {
-                try {
-                    field.set(bean, header.typeMetadata().convert(datatableValue));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
+            return new FieldData(header, (bean, entry) -> {
+                var cellValue = header.defaultValue();
+                for (final var headerName : header.names()) {
+                    if (entry.containsKey(headerName)) {
+                        cellValue = entry.get(headerName);
+                    }
+                }
+                if (cellValue != null) {
+                    try {
+                        field.set(bean, header.typeMetadata().convert(cellValue));
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         } else {
@@ -96,7 +102,7 @@ public class BeanMapper implements DatatableMapper {
 
     record FieldData(
             DatatableHeader header,
-            BiConsumer<Object, String> setter
+            BiConsumer<Object, Map<String, String>> setter
     ) {}
 
     private static String capitalize(String name) {
