@@ -3,9 +3,11 @@ package com.deblock.cucumber.datatable.mapper;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
+import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedObjects;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithPrivateSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithoutSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanWithPrivateConstructor;
+import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +22,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumns() {
-        final var beanMapper = new BeanMapper(Bean.class, new MockMetadataFactory());
+        final var beanMapper = new BeanDatatableMapper(Bean.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
 
         final var result = beanMapper.headers();
 
@@ -42,7 +44,7 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfPrivateFieldHasNoSetter() {
         final var malformedBeanException = Assertions.assertThrows(
                 MalformedBeanException.class,
-                () -> new BeanMapper(MalformedBeanPrivateColumnWithoutSetter.class, new MockMetadataFactory())
+                () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithoutSetter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
         );
 
         assertThat(malformedBeanException.getMessage())
@@ -53,7 +55,7 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfPrivateFieldHasPrivateSetter() {
         final var malformedBeanException = Assertions.assertThrows(
                 MalformedBeanException.class,
-                () -> new BeanMapper(MalformedBeanPrivateColumnWithPrivateSetter.class, new MockMetadataFactory())
+                () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithPrivateSetter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
         );
 
         assertThat(malformedBeanException.getMessage())
@@ -62,7 +64,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReturnErrorIfThereIsNoPublicConstructor() {
-        final var beanMapper = new BeanMapper(MalformedBeanWithPrivateConstructor.class, new MockMetadataFactory());
+        final var beanMapper = new BeanDatatableMapper(MalformedBeanWithPrivateConstructor.class,new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
 
         final var malformedBeanException = Assertions.assertThrows(
                 MalformedBeanException.class,
@@ -75,7 +77,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldMapDataToBean() {
-        final var beanMapper = new BeanMapper(Bean.class, new MockMetadataFactory());
+        final var beanMapper = new BeanDatatableMapper(Bean.class,new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
 
         final var result = (Bean) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -92,7 +94,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldSetDefaultValueIfColumnIsNotSet() {
-        final var beanMapper = new BeanMapper(Bean.class, new MockMetadataFactory());
+        final var beanMapper = new BeanDatatableMapper(Bean.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
 
         final var result = (Bean) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -105,6 +107,21 @@ public class BeanMapperTest {
         assertThat(result.getPrivateList()).isEqualTo(List.of("10", "11"));
     }
 
+    @Test
+    public void shouldMapDataToBeanWithNestedObjectWithAllRequiredObjectFilled() {
+        final var beanMapper = new BeanDatatableMapper(BeanWithNestedObjects.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
+
+        final var result = (BeanWithNestedObjects) beanMapper.convert(Map.of(
+                "column", "value",
+                "column1", "value1",
+                "column2", "value2",
+                "column3", "value3"
+        ));
+
+        assertThat(result.column).isEqualTo("value");
+        assertThat(result.nestedObjectAllMandatory).isEqualTo(new BeanWithNestedObjects.NestedObject("value1", "value2"));
+        assertThat(result.getNestedObjectWithOptional()).isEqualTo(new BeanWithNestedObjects.NestedObject2("value1", "value3"));
+    }
 
     public static class MockMetadataFactory implements TypeMetadataFactory {
 

@@ -1,7 +1,7 @@
 package com.deblock.cucumber.datatable.backend;
 
-import com.deblock.cucumber.datatable.mapper.BeanMapper;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
+import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -17,7 +17,7 @@ public class BeanDatatableTypeDefinitionTest {
     @Test
     public void shouldValidateHeadersWithTableWithOneRow() {
         final var validator = Mockito.mock(DataTableValidator.class);
-        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
         typeDefinition.dataTableType().transform(
@@ -34,7 +34,7 @@ public class BeanDatatableTypeDefinitionTest {
     @Test
     public void shouldValidateHeadersWithTwoColumn() {
         final var validator = Mockito.mock(DataTableValidator.class);
-        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
         Mockito.doThrow(new RuntimeException("error")).when(validator).validate(Set.of("header", "value"));
 
@@ -53,7 +53,7 @@ public class BeanDatatableTypeDefinitionTest {
     @Test
     public void shouldRemoveNullColumns() {
         final var validator = Mockito.mock(DataTableValidator.class);
-        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
         Mockito.doThrow(new RuntimeException("error")).when(validator).validate(Set.of("header"));
 

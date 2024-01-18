@@ -1,18 +1,25 @@
-package com.deblock.cucumber.datatable.data;
+package com.deblock.cucumber.datatable.mapper.datatable;
 
 
 import com.deblock.cucumber.datatable.annotations.Column;
+import com.deblock.cucumber.datatable.data.DatatableHeader;
+import com.deblock.cucumber.datatable.data.TypeMetadata;
+import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-public class SimpleColumnField implements ColumnField {
+/**
+ * Class to convert a field annotated with @Column and using a primitive type
+ * The datatable value should be contained on one column
+ */
+public class SimpleColumnDatatableMapper implements DatatableMapper {
     private final TypeMetadata typeMetadata;
     private final DatatableHeader header;
 
-    public SimpleColumnField(Column column, String name, Type genericType, TypeMetadataFactory typeMetadataFactory) {
+    public SimpleColumnDatatableMapper(Column column, String name, Type genericType, TypeMetadataFactory typeMetadataFactory) {
         this.typeMetadata = typeMetadataFactory.build(genericType);
         this.header = new DatatableHeader(column, name, typeMetadata);
     }

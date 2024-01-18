@@ -1,9 +1,10 @@
-package com.deblock.cucumber.datatable.mapper;
+package com.deblock.cucumber.datatable.mapper.datatable;
 
 import com.deblock.cucumber.datatable.annotations.Column;
-import com.deblock.cucumber.datatable.data.ColumnField;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
-import com.deblock.cucumber.datatable.data.SimpleColumnField;
+import com.deblock.cucumber.datatable.mapper.DatatableMapper;
+import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
+import com.deblock.cucumber.datatable.mapper.MapperFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -17,22 +18,22 @@ import java.util.stream.Collectors;
 
 import static java.util.Locale.ENGLISH;
 
-public class BeanMapper implements DatatableMapper {
+public class BeanDatatableMapper implements DatatableMapper {
     private final List<FieldData> fieldsData = new ArrayList<>();
     private final Class<?> clazz;
 
-    public BeanMapper(Class<?> clazz, TypeMetadataFactory typeMetadataFactory) {
+    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory) {
         this.clazz = clazz;
         Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Column.class))
-                .map(field -> this.buildFieldData(field, typeMetadataFactory))
+                .map(field -> this.buildFieldData(field, mapperFactory))
                 .forEach(fieldsData::add);
     }
 
     @Override
     public List<DatatableHeader> headers() {
         return this.fieldsData.stream()
-                .flatMap(it -> it.field.headers().stream())
+                .flatMap(it -> it.mapper.headers().stream())
                 .collect(Collectors.toList());
     }
 
@@ -41,7 +42,7 @@ public class BeanMapper implements DatatableMapper {
         final Object instance;
         try {
             instance = this.clazz.getConstructor().newInstance();
-            this.fieldsData.forEach(it -> it.setter.accept(instance, it.field.convert(entry)));
+            this.fieldsData.forEach(it -> it.setter.accept(instance, it.mapper.convert(entry)));
             return instance;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -50,7 +51,7 @@ public class BeanMapper implements DatatableMapper {
         }
     }
 
-    private FieldData buildFieldData(Field field, TypeMetadataFactory typeMetadataFactory) {
+    private FieldData buildFieldData(Field field, MapperFactory mapperFactory) {
         final var column = field.getAnnotation(Column.class);
         final var setterName = "set" + capitalize(field.getName());
         final var setters = Arrays.stream(this.clazz.getMethods())
@@ -59,12 +60,12 @@ public class BeanMapper implements DatatableMapper {
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
                 .findFirst();
 
-        final var header = new SimpleColumnField(
-                column,
-                field.getName(),
-                setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0],
-                typeMetadataFactory
+        final var header = mapperFactory.build(
+            column,
+            field.getName(),
+            setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0]
         );
+
         if (setters.isPresent()) {
             return new FieldData(header, (bean, object) -> {
                 try {
@@ -87,7 +88,7 @@ public class BeanMapper implements DatatableMapper {
     }
 
     record FieldData(
-            ColumnField field,
+            DatatableMapper mapper,
             BiConsumer<Object, Object> setter
     ) {}
 

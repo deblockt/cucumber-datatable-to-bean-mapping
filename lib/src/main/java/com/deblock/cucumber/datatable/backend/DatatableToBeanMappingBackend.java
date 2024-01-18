@@ -2,6 +2,7 @@ package com.deblock.cucumber.datatable.backend;
 
 import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
+import com.deblock.cucumber.datatable.mapper.GenericMapperFactory;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.CompositeTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.collections.CollectionTypeMetadataFactory;
@@ -27,25 +28,23 @@ import static io.cucumber.core.resource.ClasspathSupport.CLASSPATH_SCHEME;
 
 public class DatatableToBeanMappingBackend implements Backend {
     private final ClasspathScanner classFinder;
-    private final MapperFactory mapperFactory;
-    private CompositeTypeMetadataFactory typeMetadataFactory;
 
-    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, MapperFactory mapperFactory) {
+    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier) {
         this.classFinder = new ClasspathScanner(classLoaderSupplier);
-        this.mapperFactory = mapperFactory;
     }
 
     @Override
     public void loadGlue(Glue glue, List<URI> gluePaths) {
         final var customTypeMetadataFactory = new CustomTypeMetadataFactory(this.classFinder, gluePaths);
-        this.typeMetadataFactory = new CompositeTypeMetadataFactory(
+        var typeMetadataFactory = new CompositeTypeMetadataFactory(
             customTypeMetadataFactory,
             new PrimitiveTypeMetadataFactoryImpl(),
             new TemporalTypeMetadataFactory(new StaticGetTimeService()),
             new EnumTypeMetadataFactory(),
             new MapTypeMetadataFactory()
         );
-        this.typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
+        typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
+        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory);
 
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))
@@ -56,13 +55,13 @@ public class DatatableToBeanMappingBackend implements Backend {
                 .forEach(aGlueClass -> {
                     final var annotation = aGlueClass.getAnnotation(DataTableWithHeader.class);
                     if (annotation != null) {
-                        registerDataTableDefinition(glue, aGlueClass);
+                        registerDataTableDefinition(glue, aGlueClass, mapperFactory);
                     }
                 });
     }
 
-    private void registerDataTableDefinition(Glue glue, Class<?> aGlueClass) {
-        DatatableMapper datatableMapper = this.mapperFactory.build(aGlueClass, this.typeMetadataFactory);
+    private void registerDataTableDefinition(Glue glue, Class<?> aGlueClass, MapperFactory mapperFactory) {
+        DatatableMapper datatableMapper = mapperFactory.build(aGlueClass);
         final var validator = new DataTableValidator(datatableMapper.headers());
         glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator, datatableMapper));
         glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator, datatableMapper));

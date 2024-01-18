@@ -3,6 +3,8 @@ package com.deblock.cucumber.datatable.mapper;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.beans.Record;
+import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecord;
+import com.deblock.cucumber.datatable.mapper.datatable.RecordDatatableMapper;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.ParameterizedType;
@@ -12,11 +14,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RecordMapperTest {
+public class RecordDatatableMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumns() {
-        final var beanMapper = new RecordMapper(Record.class, new MockMetadataFactory());
+        final var beanMapper = new RecordDatatableMapper(Record.class, new GenericMapperFactory(new MockMetadataFactory()));
 
         final var result = beanMapper.headers();
 
@@ -35,8 +37,29 @@ public class RecordMapperTest {
     }
 
     @Test
+    public void shouldReadMetadataFromColumnAnnotatedColumnsOnNestedObjects() {
+        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecord.class, new GenericMapperFactory(new MockMetadataFactory()));
+
+        final var result = beanMapper.headers();
+
+        List<DatatableHeader> expectedHeaders = List.of(
+            new DatatableHeader(List.of("column"), "", false, null, null),
+            new DatatableHeader(List.of("column1", "column 1"), "the column1. the column1 on second object", false, null, null),
+            new DatatableHeader(List.of("column2"), "", false, null, null),
+            new DatatableHeader(List.of("column3"), "", true, null, null),
+            new DatatableHeader(List.of("column4"), "", true, null, null)
+        );
+        assertThat(result)
+                .usingRecursiveComparison()
+                .ignoringFields("typeMetadata")
+                .ignoringCollectionOrder()
+                .isEqualTo(expectedHeaders);
+    }
+
+
+    @Test
     public void shouldMapDataToBean() {
-        final var beanMapper = new RecordMapper(Record.class, new MockMetadataFactory());
+        final var beanMapper = new RecordDatatableMapper(Record.class, new GenericMapperFactory(new MockMetadataFactory()));
 
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -54,8 +77,24 @@ public class RecordMapperTest {
     }
 
     @Test
+    public void shouldMapDataToBeanWithNestedObjectWithAllRequiredObjectFilled() {
+        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecord.class, new GenericMapperFactory(new MockMetadataFactory()));
+
+        final var result = (RecordWithNestedRecord) beanMapper.convert(Map.of(
+                "column", "value",
+                "column1", "value1",
+                "column2", "value2",
+                "column3", "value3"
+        ));
+
+        assertThat(result.column()).isEqualTo("value");
+        assertThat(result.nestedObjectAllMandatory()).isEqualTo(new RecordWithNestedRecord.NestedObject("value1", "value2"));
+        assertThat(result.nestedObjectWithOptional()).isEqualTo(new RecordWithNestedRecord.NestedObject2("value1", "value3"));
+    }
+
+    @Test
     public void shouldUseDefaultValueWhenColumnIsNotPresent() {
-        final var beanMapper = new RecordMapper(Record.class, new MockMetadataFactory());
+        final var beanMapper = new RecordDatatableMapper(Record.class, new GenericMapperFactory(new MockMetadataFactory()));
 
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
