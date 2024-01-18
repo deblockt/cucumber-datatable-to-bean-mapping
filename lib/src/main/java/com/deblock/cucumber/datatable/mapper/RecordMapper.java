@@ -1,7 +1,10 @@
 package com.deblock.cucumber.datatable.mapper;
 
 import com.deblock.cucumber.datatable.annotations.Column;
+import com.deblock.cucumber.datatable.data.ColumnField;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
+import com.deblock.cucumber.datatable.data.NotMappedColumnField;
+import com.deblock.cucumber.datatable.data.SimpleColumnField;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -10,13 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class RecordMapper implements DatatableMapper {
     private final Class<?> clazz;
-    private final List<DatatableHeader> headers = new ArrayList<>();
-
-    private final List<Function<Map<String, String>, Object>> fieldConverters = new ArrayList<>();
+    private final List<ColumnField> fields = new ArrayList<>();
     private final Constructor<?> constructor;
 
     public RecordMapper(Class<?> recordClass, TypeMetadataFactory typeMetadataFactory) {
@@ -26,20 +27,9 @@ public class RecordMapper implements DatatableMapper {
         for (final RecordComponent recordComponent : components) {
             if (recordComponent.isAnnotationPresent(Column.class)) {
                 final var datatableHeader = this.buildFieldData(recordComponent, typeMetadataFactory);
-                this.headers.add(datatableHeader);
-                this.fieldConverters.add(entry -> {
-                    for (final var headerName : datatableHeader.names()) {
-                        if (entry.containsKey(headerName)) {
-                            return datatableHeader.typeMetadata().convert(entry.get(headerName));
-                        }
-                    }
-                    if (datatableHeader.defaultValue() == null) {
-                        return null;
-                    }
-                    return datatableHeader.typeMetadata().convert(datatableHeader.defaultValue());
-                });
+                this.fields.add(datatableHeader);
             } else {
-                this.fieldConverters.add(entry -> null);
+                this.fields.add(new NotMappedColumnField());
             }
         }
 
@@ -55,13 +45,16 @@ public class RecordMapper implements DatatableMapper {
 
     @Override
     public List<DatatableHeader> headers() {
-        return this.headers;
+        return this.fields.stream()
+                .flatMap(it -> it.headers().stream())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
     public Object convert(Map<String, String> entry) {
-        final var values = this.fieldConverters.stream()
-                .map(converter -> converter.apply(entry))
+        final var values = this.fields.stream()
+                .map(it -> it.convert(entry))
                 .toArray();
         try {
             return constructor.newInstance(values);
@@ -70,13 +63,9 @@ public class RecordMapper implements DatatableMapper {
         }
     }
 
-    private DatatableHeader buildFieldData(RecordComponent recordComponent, TypeMetadataFactory typeMetadataFactory) {
+    private ColumnField buildFieldData(RecordComponent recordComponent, TypeMetadataFactory typeMetadataFactory) {
         final var column = recordComponent.getAnnotation(Column.class);
 
-        return new DatatableHeader(
-            column,
-            recordComponent.getName(),
-            typeMetadataFactory.build(recordComponent.getGenericType())
-        );
+        return new SimpleColumnField(column, recordComponent.getName(), recordComponent.getGenericType(), typeMetadataFactory);
     }
 }

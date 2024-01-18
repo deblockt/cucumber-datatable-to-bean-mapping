@@ -1,7 +1,9 @@
 package com.deblock.cucumber.datatable.mapper;
 
 import com.deblock.cucumber.datatable.annotations.Column;
+import com.deblock.cucumber.datatable.data.ColumnField;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
+import com.deblock.cucumber.datatable.data.SimpleColumnField;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -11,12 +13,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static java.util.Locale.ENGLISH;
 
 public class BeanMapper implements DatatableMapper {
-    private final List<DatatableHeader> headers = new ArrayList<>();
-    private final List<FieldData> fieldDataByColumnName = new ArrayList<>();
+    private final List<FieldData> fieldsData = new ArrayList<>();
     private final Class<?> clazz;
 
     public BeanMapper(Class<?> clazz, TypeMetadataFactory typeMetadataFactory) {
@@ -24,15 +26,14 @@ public class BeanMapper implements DatatableMapper {
         Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Column.class))
                 .map(field -> this.buildFieldData(field, typeMetadataFactory))
-                .forEach(fieldData -> {
-                    fieldDataByColumnName.add(fieldData);
-                    this.headers.add(fieldData.header);
-                });
+                .forEach(fieldsData::add);
     }
 
     @Override
     public List<DatatableHeader> headers() {
-        return this.headers;
+        return this.fieldsData.stream()
+                .flatMap(it -> it.field.headers().stream())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -40,7 +41,7 @@ public class BeanMapper implements DatatableMapper {
         final Object instance;
         try {
             instance = this.clazz.getConstructor().newInstance();
-            this.fieldDataByColumnName.forEach(it -> it.setter.accept(instance, entry));
+            this.fieldsData.forEach(it -> it.setter.accept(instance, it.field.convert(entry)));
             return instance;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -58,41 +59,26 @@ public class BeanMapper implements DatatableMapper {
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
                 .findFirst();
 
-        final var header = new DatatableHeader(
+        final var header = new SimpleColumnField(
                 column,
                 field.getName(),
-                typeMetadataFactory.build(setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0])
+                setters.isEmpty() ? field.getGenericType() : setters.get().getGenericParameterTypes()[0],
+                typeMetadataFactory
         );
         if (setters.isPresent()) {
-            return new FieldData(header, (bean, entry) -> {
-                var cellValue = header.defaultValue();
-                for (final var headerName : header.names()) {
-                    if (entry.containsKey(headerName)) {
-                        cellValue = entry.get(headerName);
-                    }
-                }
-                if (cellValue != null) {
-                    try {
-                        setters.get().invoke(bean, header.typeMetadata().convert(cellValue));
-                    } catch (InvocationTargetException | IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
+            return new FieldData(header, (bean, object) -> {
+                try {
+                    setters.get().invoke(bean, object);
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
                 }
             });
         } else if (Modifier.isPublic(field.getModifiers())) {
-            return new FieldData(header, (bean, entry) -> {
-                var cellValue = header.defaultValue();
-                for (final var headerName : header.names()) {
-                    if (entry.containsKey(headerName)) {
-                        cellValue = entry.get(headerName);
-                    }
-                }
-                if (cellValue != null) {
-                    try {
-                        field.set(bean, header.typeMetadata().convert(cellValue));
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
+            return new FieldData(header, (bean, object) -> {
+                try {
+                    field.set(bean, object);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
                 }
             });
         } else {
@@ -101,8 +87,8 @@ public class BeanMapper implements DatatableMapper {
     }
 
     record FieldData(
-            DatatableHeader header,
-            BiConsumer<Object, Map<String, String>> setter
+            ColumnField field,
+            BiConsumer<Object, Object> setter
     ) {}
 
     private static String capitalize(String name) {
