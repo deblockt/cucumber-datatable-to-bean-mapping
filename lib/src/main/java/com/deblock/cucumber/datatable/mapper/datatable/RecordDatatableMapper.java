@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.function.Predicate.not;
+
 public class RecordDatatableMapper implements DatatableMapper {
     private final Class<?> clazz;
     private final List<DatatableMapper> fields = new ArrayList<>();
@@ -62,9 +64,9 @@ public class RecordDatatableMapper implements DatatableMapper {
                 headersToMerge.add(header);
                 final var mergedHeader = new DatatableHeader(
                     headersToMerge.stream().flatMap(it -> it.names().stream()).distinct().toList(),
-                    join(". ", headersToMerge.stream().map(DatatableHeader::description)),
+                    join(". ", headersToMerge.stream().map(DatatableHeader::description), ""),
                     headersToMerge.stream().anyMatch(DatatableHeader::optional),
-                    join(" | ", headersToMerge.stream().map(DatatableHeader::defaultValue)),
+                    join(" | ", headersToMerge.stream().map(DatatableHeader::defaultValue), null),
                     header.typeMetadata()
                 );
                 mergedHeaders.add(mergedHeader);
@@ -74,13 +76,14 @@ public class RecordDatatableMapper implements DatatableMapper {
         return mergedHeaders;
     }
 
-    private String join(String delimiter, Stream<String> stringStream) {
+    private String join(String delimiter, Stream<String> stringStream, String defaultValue) {
         return stringStream
                 .filter(Objects::nonNull)
+                .filter(not(String::isEmpty))
                 .collect(
                         Collectors.collectingAndThen(
                             Collectors.joining(delimiter),
-                            str -> str.isEmpty() ? null : str
+                            str -> str.isEmpty() ? defaultValue : str
                         )
                 );
     }

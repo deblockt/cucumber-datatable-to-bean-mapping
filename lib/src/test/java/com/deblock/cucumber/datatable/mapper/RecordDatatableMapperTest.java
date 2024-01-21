@@ -93,6 +93,23 @@ public class RecordDatatableMapperTest {
     }
 
     @Test
+    public void shouldSetNestedObjectToNullInCaseOfMissingFields() {
+        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecord.class, new GenericMapperFactory(new MockMetadataFactory()));
+
+        final var result = (RecordWithNestedRecord) beanMapper.convert(Map.of(
+                "column", "value",
+                "column1", "value1",
+                "column2", "value2",
+                "column3", "value3"
+        ));
+
+        assertThat(result.column()).isEqualTo("value");
+        assertThat(result.nestedObjectAllMandatory()).isEqualTo(new RecordWithNestedRecord.NestedObject("value1", "value2"));
+        assertThat(result.nestedObjectWithOptional()).isEqualTo(new RecordWithNestedRecord.NestedObject2("value1", "value3"));
+        assertThat(result.optionalNestedObjectAllMandatory()).isNull();
+    }
+
+    @Test
     public void shouldUseDefaultValueWhenColumnIsNotPresent() {
         final var beanMapper = new RecordDatatableMapper(Record.class, new GenericMapperFactory(new MockMetadataFactory()));
 

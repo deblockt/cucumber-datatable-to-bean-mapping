@@ -15,7 +15,7 @@ public class TableWithHeadersValidatorTest {
         final var validator = new DataTableValidator(List.of(
                 header("header1").build(),
                 header("header2").build()
-        ));
+        ), false);
         final var dataTableHeaders = List.of("headerUnknown");
 
         final var exception = Assertions.assertThrows(
@@ -34,7 +34,7 @@ public class TableWithHeadersValidatorTest {
                 header("header1").build(),
                 header("header2").build(),
                 header("header3").mandatory().build()
-        ));
+        ), false);
         final var dataTableHeaders = List.of("header1");
 
         final var exception = Assertions.assertThrows(
@@ -49,7 +49,7 @@ public class TableWithHeadersValidatorTest {
         final var validator = new DataTableValidator(List.of(
                 header("header1").mandatory().build(),
                 header("header").mandatory().build()
-        ));
+        ), false);
         final var dataTableHeaders = List.of("header", "header");
 
         final var exception = Assertions.assertThrows(
@@ -65,7 +65,7 @@ public class TableWithHeadersValidatorTest {
                 header("header1").build(),
                 header("header2").build(),
                 header("header3").mandatory().build()
-        ));
+        ), false);
         final var dataTableHeaders = List.of("header3");
 
         Assertions.assertDoesNotThrow(() -> validator.validate(dataTableHeaders));
@@ -77,7 +77,7 @@ public class TableWithHeadersValidatorTest {
                 header("header1").build(),
                 header("header2").build(),
                 header("header3", "alias1", "alias2").build()
-        ));
+        ), false);
         final var dataTableHeaders = List.of("alias2");
 
         Assertions.assertDoesNotThrow(() -> validator.validate(dataTableHeaders));
@@ -89,7 +89,7 @@ public class TableWithHeadersValidatorTest {
                 header("header1").description("the header 1").build(),
                 header("h2").build(),
                 header("header3", "alias1", "alias2").mandatory().description("the header 3").build()
-        ));
+        ), false);
 
         final var result = validator.description();
 
@@ -109,7 +109,7 @@ public class TableWithHeadersValidatorTest {
                 header("header1").description("the header 1").typeMetadata(typeMetadata("10", "integer")).defaultValue("15").build(),
                 header("h2").typeMetadata(typeMetadata("motherDTO", "MotherDTO")).build(),
                 header("header3", "alias1", "alias2").mandatory().description("the header 3").build()
-        ));
+        ), false);
 
         final var result = validator.description();
 

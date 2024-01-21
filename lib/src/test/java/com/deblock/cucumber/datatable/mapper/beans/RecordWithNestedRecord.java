@@ -34,6 +34,8 @@ public record RecordWithNestedRecord(
     @DataTableWithHeader
     public record NestedObject3(
             @Column("column4")
-            String nestedColumn4
+            String nestedColumn4,
+            @Column(value = "column3", mandatory = false)
+            String nestedColumn3
     ) {}
 }

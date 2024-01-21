@@ -13,9 +13,14 @@ import java.util.stream.Collectors;
  */
 public class DataTableValidator {
     private final Collection<DatatableHeader> headers;
+    private final boolean allowAdditionalHeaders;
 
-    public DataTableValidator(Collection<DatatableHeader> headers) {
+    public DataTableValidator(
+            Collection<DatatableHeader> headers,
+            boolean allowAdditionalHeaders
+    ) {
         this.headers = headers;
+        this.allowAdditionalHeaders = allowAdditionalHeaders;
     }
 
     public void validate(Collection<String> headers) {
@@ -23,7 +28,7 @@ public class DataTableValidator {
                 .filter(header -> findHeaderMatching(header).isEmpty())
                 .collect(Collectors.toList());
 
-        if (!additionalHeaders.isEmpty()) {
+        if (!this.allowAdditionalHeaders && !additionalHeaders.isEmpty()) {
             throwUnknownHeaderException(additionalHeaders);
         }
 

@@ -62,7 +62,7 @@ public class DatatableToBeanMappingBackend implements Backend {
 
     private void registerDataTableDefinition(Glue glue, Class<?> aGlueClass, MapperFactory mapperFactory) {
         DatatableMapper datatableMapper = mapperFactory.build(aGlueClass);
-        final var validator = new DataTableValidator(datatableMapper.headers());
+        final var validator = new DataTableValidator(datatableMapper.headers(), false);
         glue.addDataTableType(new BeanDatatableTypeDefinition(aGlueClass, validator, datatableMapper));
         glue.addDataTableType(new BeanListDatatableTypeDefinition(aGlueClass, validator, datatableMapper));
     }
