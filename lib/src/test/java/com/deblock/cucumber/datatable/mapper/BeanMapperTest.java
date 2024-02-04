@@ -41,6 +41,26 @@ public class BeanMapperTest {
     }
 
     @Test
+    public void shouldReadMetadataFromColumnAnnotatedColumnsOnNestedObjects() {
+        final var beanMapper = new BeanDatatableMapper(BeanWithNestedObjects.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
+
+        final var result = beanMapper.headers();
+
+        List<DatatableHeader> expectedHeaders = List.of(
+                new DatatableHeader(List.of("column"), "", false, null, null),
+                new DatatableHeader(List.of("column1", "column 1"), "the column1. the column1 on second object", false, null, null),
+                new DatatableHeader(List.of("column2"), "", false, null, null),
+                new DatatableHeader(List.of("column3"), "", true, null, null),
+                new DatatableHeader(List.of("column4"), "", true, null, null)
+        );
+        assertThat(result)
+                .usingRecursiveComparison()
+                .ignoringFields("typeMetadata")
+                .ignoringCollectionOrder()
+                .isEqualTo(expectedHeaders);
+    }
+
+    @Test
     public void shouldReturnErrorIfPrivateFieldHasNoSetter() {
         final var malformedBeanException = Assertions.assertThrows(
                 MalformedBeanException.class,
@@ -64,11 +84,9 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReturnErrorIfThereIsNoPublicConstructor() {
-        final var beanMapper = new BeanDatatableMapper(MalformedBeanWithPrivateConstructor.class,new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
-
         final var malformedBeanException = Assertions.assertThrows(
                 MalformedBeanException.class,
-                () -> beanMapper.convert(Map.of())
+                () -> new BeanDatatableMapper(MalformedBeanWithPrivateConstructor.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
         );
 
         assertThat(malformedBeanException.getMessage())
