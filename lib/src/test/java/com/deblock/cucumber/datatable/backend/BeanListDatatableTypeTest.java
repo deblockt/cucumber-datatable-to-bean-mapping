@@ -1,7 +1,7 @@
 package com.deblock.cucumber.datatable.backend;
 
-import com.deblock.cucumber.datatable.mapper.BeanMapper;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
+import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ public class BeanListDatatableTypeTest {
     @Test
     public void shouldValidateHeadersWithTableWithOneRow() {
         final var validator = Mockito.mock(DataTableValidator.class);
-        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         final var typeDefinition = new BeanListDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
         typeDefinition.dataTableType().transform(
@@ -37,7 +37,7 @@ public class BeanListDatatableTypeTest {
     @Test
     public void shouldReturnErrorWhenHeadersAreNotPresent() {
         final var validator = Mockito.mock(DataTableValidator.class);
-        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         final var typeDefinition = new BeanListDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
         final var result = typeDefinition.dataTableType().transform(List.of());
@@ -47,7 +47,7 @@ public class BeanListDatatableTypeTest {
     @Test
     public void shouldIgnoreNullValues() {
         final var validator = Mockito.mock(DataTableValidator.class);
-        final var beanMapper = Mockito.mock(BeanMapper.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         final var typeDefinition = new BeanListDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
         typeDefinition.dataTableType().transform(

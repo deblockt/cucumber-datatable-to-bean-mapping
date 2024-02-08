@@ -76,7 +76,7 @@ The following parameters are available on the `@Column` annotation
 
 | name         | type     | description                                                                                                  |
 |--------------|----------|--------------------------------------------------------------------------------------------------------------|
-| value        | string[] | the column name. You can specify multiple name for the same column                                           |
+| value        | string[] | the column name. The default value is the field name. You can specify multiple name for the same column      |
 | description  | string   | the column description. The description is displayed when a datatable is malformed to show a helper message. |
 | mandatory    | boolean  | default true. Can be set to false to set the column to optional                                              |
 | defaultValue | string   | the default value used if the column is not specified                                                        |
@@ -139,6 +139,90 @@ The function should be provided on your steps package.
 public static Customer customerMapper(String customerCode) {
     return TestContext.getCustomer(customerCode);
 }
+```
+
+## Nested Datatable object support
+
+If you have big datatable, you can organize your objects using nested object. 
+For example, if you have a `Customer` object, you can have a `PersonalInformation` Object. 
+```java
+@DataTableWithHeader
+record Customer(
+    @Column
+    String id,
+    @Column
+    PersonalInformation personalInformation
+) {}
+
+@DataTableWithHeader
+record PersonalInformation(
+    @Column
+    String firstName,
+    @Column
+    String lastName
+) {}
+```
+
+Using these objects, the datatable will look like 
+```gherkin
+| id | first name | last name |
+| 10 | Thomas     | Deblock   |
+```
+
+Now If you another object `Conversation` with two customer, like that: 
+```java
+@DataTableWithHeader
+record Conversation(
+    @Column 
+    Customer customer1,
+    @Column
+    Customer customer2
+) {}
+```
+
+If you write a datatable, you can not know if `first name` column is the first name of the `customer1` or the `customer2`.
+To fix this issue, you can override the fields name using `<parent_name>`, see this example: 
+```java
+@DataTableWithHeader
+record Conversation(
+    @Column(value = "customer1", mandatory = false)
+    Customer customer1,
+    @Column(value = "customer2", mandatory = false)
+    Customer customer2
+) {}
+
+// parent_name will be replaced by customer1 or customer2
+@DataTableWithHeader
+record Customer(
+        @Column("<parent_name> id") 
+        String id,
+        @Column("<parent_name>")
+        PersonalInformation personalInformation
+) {}
+
+// parent_name will be replaced by customer1 or customer2 coming from personalInformation annotation
+@DataTableWithHeader
+record PersonalInformation(
+        @Column("<parent_name> first name") 
+        String firstName,
+        @Column("<parent_name> last name")
+        String lastName
+) {}
+```
+
+Using these objects, the following datatable will works:
+```gherkin
+# generate a Conversation object with only a customer1, and null for customer2
+| customer1 id | customer1 first name | customer1 last name |
+| 10           | Thomas               | Deblock             |
+
+# generate a Conversation object with only a customer2, and null for customer1
+| customer2 id | customer2 first name | customer2 last name |
+| 10           | Thomas               | Deblock             |
+
+# generate a Conversation object with a customer2, and a customer1
+| customer2 id | customer2 first name | customer2 last name | customer2 id | customer2 first name | customer2 last name |
+| 10           | Thomas               | Deblock             | 11           | Nicolas              | Deblock             |
 ```
 
 ## Usage on a fat/uber jar

@@ -1,6 +1,7 @@
 package com.deblock.cucumber.datatable.data;
 
 import com.deblock.cucumber.datatable.annotations.Column;
+import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 
 import java.util.List;
 
@@ -13,11 +14,11 @@ public record DatatableHeader(
 
     public DatatableHeader(
             Column column,
-            String originalFieldName,
+            ColumnNameBuilder columnNameBuilder,
             TypeMetadata typeMetadata
     ) {
         this(
-            buildNames(column.value(), originalFieldName),
+            columnNameBuilder.build(),
             column.description(),
             !column.mandatory() || !column.defaultValue().isEmpty(),
             column.defaultValue().isEmpty() ? null : column.defaultValue(),
@@ -35,16 +36,5 @@ public record DatatableHeader(
 
     public String typeDescription() {
         return this.typeMetadata.typeDescription();
-    }
-
-    private static List<String> buildNames(String[] names, String fieldName) {
-        if (names != null && names.length > 0) {
-            return List.of(names);
-        }
-        return List.of(humanName(fieldName), fieldName);
-    }
-
-    private static String humanName(String name) {
-        return name.replaceAll("([a-z])([A-Z])", "$1 $2").trim().toLowerCase();
     }
 }
