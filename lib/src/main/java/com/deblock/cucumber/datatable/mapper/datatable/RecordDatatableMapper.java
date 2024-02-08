@@ -3,6 +3,11 @@ package com.deblock.cucumber.datatable.mapper.datatable;
 import com.deblock.cucumber.datatable.annotations.Column;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
+import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
+import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilderChain;
+import com.deblock.cucumber.datatable.mapper.name.FromAnnotationColumnNameBuilder;
+import com.deblock.cucumber.datatable.mapper.name.FromComponentNameBuilder;
+import com.deblock.cucumber.datatable.mapper.name.WithParentNameBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +20,11 @@ public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMa
     private final Constructor<?> constructor;
 
     public RecordDatatableMapper(Class<?> recordClass, MapperFactory mapperFactory) {
-        super(readRecordFields(recordClass, mapperFactory));
+        this(recordClass, mapperFactory, null);
+    }
+
+    public RecordDatatableMapper(Class<?> recordClass, MapperFactory mapperFactory, ColumnNameBuilder parentNameBuilder) {
+        super(readRecordFields(recordClass, mapperFactory, parentNameBuilder));
 
         final var types = Arrays.stream(recordClass.getRecordComponents())
                 .map(RecordComponent::getType)
@@ -39,12 +48,12 @@ public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMa
         }
     }
 
-    private static List<DatatableMapper> readRecordFields(Class<?> clazz, MapperFactory mapperFactory) {
+    private static List<DatatableMapper> readRecordFields(Class<?> clazz, MapperFactory mapperFactory, ColumnNameBuilder parentNameBuilder) {
         final var components = clazz.getRecordComponents();
         return Arrays.stream(components)
                 .map(recordComponent -> {
                     if (recordComponent.isAnnotationPresent(Column.class)) {
-                        return buildDatatableMapper(recordComponent, mapperFactory);
+                        return buildDatatableMapper(recordComponent, mapperFactory, parentNameBuilder);
                     } else {
                         return new NotMappedDatatableMapper();
                     }
@@ -52,12 +61,15 @@ public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMa
                 .toList();
     }
 
-    private static DatatableMapper buildDatatableMapper(RecordComponent recordComponent, MapperFactory mapperFactory) {
+    private static DatatableMapper buildDatatableMapper(RecordComponent recordComponent, MapperFactory mapperFactory, ColumnNameBuilder parentNameBuilder) {
         final var column = recordComponent.getAnnotation(Column.class);
 
         return mapperFactory.build(
                 column,
-                recordComponent.getName(),
+                new WithParentNameBuilder(
+                        parentNameBuilder,
+                        new ColumnNameBuilderChain(new FromAnnotationColumnNameBuilder(column), new FromComponentNameBuilder(recordComponent))
+                ),
                 recordComponent.getGenericType()
         );
     }

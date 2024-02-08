@@ -4,6 +4,7 @@ import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedObjects;
+import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedRecordNameMapping;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithPrivateSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithoutSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanWithPrivateConstructor;
@@ -52,6 +53,25 @@ public class BeanMapperTest {
                 new DatatableHeader(List.of("column2"), "", false, null, null),
                 new DatatableHeader(List.of("column3"), "", true, null, null),
                 new DatatableHeader(List.of("column4"), "", true, null, null)
+        );
+        assertThat(result)
+                .usingRecursiveComparison()
+                .ignoringFields("typeMetadata")
+                .ignoringCollectionOrder()
+                .isEqualTo(expectedHeaders);
+    }
+
+    @Test
+    public void shouldReplaceParentName() {
+        final var beanMapper = new BeanDatatableMapper(BeanWithNestedRecordNameMapping.class, new GenericMapperFactory(new RecordDatatableMapperTest.MockMetadataFactory()));
+
+        final var result = beanMapper.headers();
+
+        List<DatatableHeader> expectedHeaders = List.of(
+                new DatatableHeader(List.of("nested object1 column1", "nestedObject1 column1"), "the column1", false, null, null),
+                new DatatableHeader(List.of("nested object1_2 column", "nestedObject1_2 column"), "", false, null, null),
+                new DatatableHeader(List.of("object2 column1"), "the column1", false, null, null),
+                new DatatableHeader(List.of("object2_2 column"), "", false, null, null)
         );
         assertThat(result)
                 .usingRecursiveComparison()

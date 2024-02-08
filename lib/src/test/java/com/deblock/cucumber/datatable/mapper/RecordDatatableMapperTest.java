@@ -4,6 +4,7 @@ import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.beans.Record;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecord;
+import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecordNameMapping;
 import com.deblock.cucumber.datatable.mapper.datatable.RecordDatatableMapper;
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +57,24 @@ public class RecordDatatableMapperTest {
                 .isEqualTo(expectedHeaders);
     }
 
+    @Test
+    public void shouldReplaceParentName() {
+        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecordNameMapping.class, new GenericMapperFactory(new MockMetadataFactory()));
+
+        final var result = beanMapper.headers();
+
+        List<DatatableHeader> expectedHeaders = List.of(
+                new DatatableHeader(List.of("nested object1 column1", "nestedObject1 column1"), "the column1", false, null, null),
+                new DatatableHeader(List.of("nested object1_2 column", "nestedObject1_2 column"), "", false, null, null),
+                new DatatableHeader(List.of("object2 column1"), "the column1", false, null, null),
+                new DatatableHeader(List.of("object2_2 column"), "", false, null, null)
+        );
+        assertThat(result)
+                .usingRecursiveComparison()
+                .ignoringFields("typeMetadata")
+                .ignoringCollectionOrder()
+                .isEqualTo(expectedHeaders);
+    }
 
     @Test
     public void shouldMapDataToBean() {

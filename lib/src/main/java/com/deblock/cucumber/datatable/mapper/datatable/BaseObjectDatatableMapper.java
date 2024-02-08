@@ -45,8 +45,8 @@ public abstract class BaseObjectDatatableMapper<T extends DatatableMapper> imple
                         join(" | ", headersToMerge.stream().map(DatatableHeader::defaultValue), null),
                         header.typeMetadata()
                 );
-                mergedHeaders.add(mergedHeader);
                 mergedHeaders.removeAll(sameHeaders);
+                mergedHeaders.add(mergedHeader);
             }
         }
         return mergedHeaders;
