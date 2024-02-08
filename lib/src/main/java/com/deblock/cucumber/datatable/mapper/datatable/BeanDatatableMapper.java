@@ -17,7 +17,7 @@ import java.util.function.BiConsumer;
 
 import static java.util.Locale.ENGLISH;
 
-public class BeanDatatableMapper extends ObjectDatabaseMapper<BeanDatatableMapper.FieldData> {
+public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatableMapper.FieldData> {
     private final Constructor<?> constructor;
 
     public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory) {

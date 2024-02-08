@@ -12,12 +12,12 @@ import java.util.stream.Stream;
 
 import static java.util.function.Predicate.not;
 
-public abstract class ObjectDatabaseMapper<T extends DatatableMapper> implements DatatableMapper {
+public abstract class BaseObjectDatatableMapper<T extends DatatableMapper> implements DatatableMapper {
 
     protected final List<DatatableHeader> headers;
     protected final List<T> fields;
 
-    protected ObjectDatabaseMapper(List<T> mappers) {
+    protected BaseObjectDatatableMapper(List<T> mappers) {
         this.headers = mergeHeaders(mappers.stream().flatMap(it -> it.headers().stream()).toList());
         this.fields = mappers;
     }

@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class RecordDatatableMapper extends ObjectDatabaseMapper<DatatableMapper> {
+public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMapper> {
     private final Constructor<?> constructor;
 
     public RecordDatatableMapper(Class<?> recordClass, MapperFactory mapperFactory) {
