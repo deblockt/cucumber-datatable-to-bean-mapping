@@ -2,6 +2,7 @@ package com.deblock.cucumber.datatable.mapper.typemetadata;
 
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class CompositeTypeMetadataFactory implements TypeMetadataFactory {
                 .map(factory -> factory.build(type))
                 .filter(Objects::nonNull)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("can not find any converter for class " + type + ". You can define your own converter using @CustomDatatableFieldMapper"));
+                .orElseThrow(() -> new NoConverterFound(type));
     }
 
     public void add(TypeMetadataFactory typeMetadataFactory) {

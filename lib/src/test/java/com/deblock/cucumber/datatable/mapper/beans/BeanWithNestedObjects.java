@@ -16,6 +16,8 @@ public class BeanWithNestedObjects {
     private NestedObject2 nestedObjectWithOptional;
     @Column(mandatory = false)
     public BeanWithNestedObjects.NestedObject3 optionalNestedObjectAllMandatory;
+    @Column("nestedWithCustomMapper")
+    public BeanWithNestedObjects.NestedWithCustomMapper nestedWithCustomMapper;
 
     public BeanWithNestedObjects() {
 
@@ -131,6 +133,30 @@ public class BeanWithNestedObjects {
         @Override
         public int hashCode() {
             return Objects.hash(nestedColumn4, nestedColumn3);
+        }
+    }
+
+    @DataTableWithHeader
+    public static class NestedWithCustomMapper {
+
+        @Column
+        public String ignoredColumn;
+
+        public NestedWithCustomMapper(String ignoredColumn) {
+            this.ignoredColumn = ignoredColumn;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) return true;
+            if (object == null || getClass() != object.getClass()) return false;
+            NestedWithCustomMapper that = (NestedWithCustomMapper) object;
+            return Objects.equals(ignoredColumn, that.ignoredColumn);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(ignoredColumn);
         }
     }
 }

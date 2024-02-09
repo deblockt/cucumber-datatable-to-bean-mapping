@@ -12,7 +12,9 @@ public record RecordWithNestedRecord(
         @Column
         NestedObject2 nestedObjectWithOptional,
         @Column(mandatory = false)
-        NestedObject3 optionalNestedObjectAllMandatory
+        NestedObject3 optionalNestedObjectAllMandatory,
+        @Column("nestedWithCustomMapper")
+        NestedWithCustomMapper nestedWithCustomMapper
 ) {
 
     @DataTableWithHeader
@@ -37,5 +39,11 @@ public record RecordWithNestedRecord(
             String nestedColumn4,
             @Column(value = "column3", mandatory = false)
             String nestedColumn3
+    ) {}
+
+    @DataTableWithHeader
+    public record NestedWithCustomMapper(
+            @Column
+            String ignoredColumn
     ) {}
 }
