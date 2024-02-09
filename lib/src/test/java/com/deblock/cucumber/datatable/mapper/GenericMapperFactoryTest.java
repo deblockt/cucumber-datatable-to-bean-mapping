@@ -28,4 +28,12 @@ public class GenericMapperFactoryTest {
 
         assertThat(result).isInstanceOf(RecordDatatableMapper.class);
     }
+
+    public void shouldReturnASimpleColumnDatatableMapperIfMetadataIsFound() {
+        final var factory = new GenericMapperFactory(Mockito.mock(TypeMetadataFactory.class));
+
+        final var result = factory.build(Record.class);
+
+        assertThat(result).isInstanceOf(RecordDatatableMapper.class);
+    }
 }

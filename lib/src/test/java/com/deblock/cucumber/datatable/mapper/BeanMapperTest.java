@@ -1,5 +1,6 @@
 package com.deblock.cucumber.datatable.mapper;
 
+import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
@@ -9,6 +10,7 @@ import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWit
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithoutSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanWithPrivateConstructor;
 import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
+import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +54,8 @@ public class BeanMapperTest {
                 new DatatableHeader(List.of("column1", "column 1"), "the column1. the column1 on second object", false, null, null),
                 new DatatableHeader(List.of("column2"), "", false, null, null),
                 new DatatableHeader(List.of("column3"), "", true, null, null),
-                new DatatableHeader(List.of("column4"), "", true, null, null)
+                new DatatableHeader(List.of("column4"), "", true, null, null),
+                new DatatableHeader(List.of("nestedWithCustomMapper"), "", false, null, null)
         );
         assertThat(result)
                 .usingRecursiveComparison()
@@ -153,18 +156,43 @@ public class BeanMapperTest {
                 "column", "value",
                 "column1", "value1",
                 "column2", "value2",
-                "column3", "value3"
+                "column3", "value3",
+                "nestedWithCustomMapper", "nestedWithCustomMapperValue"
         ));
 
         assertThat(result.column).isEqualTo("value");
         assertThat(result.nestedObjectAllMandatory).isEqualTo(new BeanWithNestedObjects.NestedObject("value1", "value2"));
         assertThat(result.getNestedObjectWithOptional()).isEqualTo(new BeanWithNestedObjects.NestedObject2("value1", "value3"));
+        assertThat(result.nestedWithCustomMapper.ignoredColumn).isEqualTo("nestedWithCustomMapperValue");
     }
 
     public static class MockMetadataFactory implements TypeMetadataFactory {
 
         @Override
         public TypeMetadata build(Type type) {
+            if (BeanWithNestedObjects.NestedWithCustomMapper.class.equals(type)) {
+                return new TypeMetadata() {
+                    @Override
+                    public String typeDescription() {
+                        return "NestedWithCustomMapper";
+                    }
+
+                    @Override
+                    public String sample() {
+                        return "1111";
+                    }
+
+                    @Override
+                    public Object convert(String value) throws ConversionError {
+                        return new BeanWithNestedObjects.NestedWithCustomMapper(value);
+                    }
+                };
+            }
+
+            if (type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class)) {
+                throw new NoConverterFound(type);
+            }
+
             return new TypeMetadata() {
                 @Override
                 public String typeDescription() {

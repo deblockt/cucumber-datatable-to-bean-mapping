@@ -2,6 +2,7 @@ package com.deblock.cucumber.datatable.mapper.typemetadata;
 
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
+import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -35,7 +36,7 @@ public class CompositeTypeMetadataFactoryTest {
         Mockito.when(nonNullFactory.build(type)).thenReturn(typeMetadata);
         final var typeMetadataFactory = new CompositeTypeMetadataFactory(nullFactory, nonNullFactory);
 
-        final var exception = assertThrows(IllegalArgumentException.class, () -> typeMetadataFactory.build(Integer.class));
+        final var exception = assertThrows(NoConverterFound.class, () -> typeMetadataFactory.build(Integer.class));
 
         assertThat(exception.getMessage()).isEqualTo("can not find any converter for class class java.lang.Integer. You can define your own converter using @CustomDatatableFieldMapper");
     }
