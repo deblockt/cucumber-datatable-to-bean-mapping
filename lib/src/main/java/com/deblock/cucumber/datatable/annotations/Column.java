@@ -13,7 +13,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER})
 public @interface Column {
     /**
-     * the column name, you can specify multiple value to allow to use multiple column names
+     * The column name, you can specify multiple value to allow to use multiple column names.
+     * If not specified the name will be the field name.
      */
     String[] value() default {};
 
