@@ -8,6 +8,7 @@ import io.cucumber.datatable.TableTransformer;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
@@ -26,26 +27,38 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
         return new DataTableType(
                 this.glueClass,
                 (TableTransformer<Object>) table -> {
-                    Map<String, String> map;
-                    try {
-                        map = new HashMap<>();
+                    final Map<String, String> map = new HashMap<>();
+                    final long firstRowNumberOfHeader = numberOfCommonHeader(table.row(0));
+                    final long firstColumnNumberOfHeader = numberOfCommonHeader(table.column(0));
+                    final boolean isTwoColumnTable = table.row(0).size() == 2;
+
+                    if (
+                            firstRowNumberOfHeader > firstColumnNumberOfHeader
+                            || (firstRowNumberOfHeader == firstColumnNumberOfHeader && !isTwoColumnTable)
+                    ) {
                         // table using only one row
                         for (var i = 0; i < table.width(); ++i) {
                             map.put(table.row(0).get(i), table.row(1).get(i));
                         }
-                        map.values().removeAll(Collections.singleton(null));
-                        this.validator.validate(map.keySet());
-                    } catch (Exception e) {
-                        map = new HashMap<>();
+                    } else {
                         // table using 2 columns mode
                         for (var i = 0; i < table.height(); ++i) {
                             map.put(table.column(0).get(i), table.column(1).get(i));
                         }
-                        map.values().removeAll(Collections.singleton(null));
-                        this.validator.validate(map.keySet());
                     }
+                    map.values().removeAll(Collections.singleton(null));
+                    this.validator.validate(map.keySet());
                     return this.datatableMapper.convert(map);
                 });
+    }
+
+    private long numberOfCommonHeader(List<String> firstRow) {
+        return this.datatableMapper.headers().stream()
+                .filter(header ->
+                        header.names().stream()
+                                .anyMatch(firstRow::contains)
+                )
+                .count();
     }
 
     @Override
@@ -57,4 +70,6 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
     public String getLocation() {
         return null;
     }
+
+
 }

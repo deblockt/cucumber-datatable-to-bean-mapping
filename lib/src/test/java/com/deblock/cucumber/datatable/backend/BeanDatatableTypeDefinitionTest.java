@@ -1,5 +1,6 @@
 package com.deblock.cucumber.datatable.backend;
 
+import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
 import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
@@ -12,13 +13,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 public class BeanDatatableTypeDefinitionTest {
 
     @Test
     public void shouldValidateHeadersWithTableWithOneRow() {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
-        final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
+        when(beanMapper.headers()).thenReturn(List.of(
+                new DatatableHeader(List.of("header"), null, false, null, null),
+                new DatatableHeader(List.of("header2"), null, false, null, null)
+        ));
+        final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
         typeDefinition.dataTableType().transform(
                 List.of(
@@ -27,16 +35,61 @@ public class BeanDatatableTypeDefinitionTest {
                 )
         );
 
-        Mockito.verify(validator).validate(Set.of("header", "header2"));
-        Mockito.verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
+        verify(validator).validate(Set.of("header", "header2"));
+        verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
+    }
+
+    @Test
+    public void shouldValidateUsingRowHeaderWhenNoMatchAndMoreThanTwoColumns() {
+        final var validator = Mockito.mock(DataTableValidator.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
+        when(beanMapper.headers()).thenReturn(List.of(
+                new DatatableHeader(List.of("header"), null, false, null, null),
+                new DatatableHeader(List.of("header2"), null, false, null, null),
+                new DatatableHeader(List.of("header3"), null, false, null, null)
+        ));
+        final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
+
+        typeDefinition.dataTableType().transform(
+                List.of(
+                        row("headerg", "header2g", "foo"),
+                        row("value", "value2", "foo")
+                )
+        );
+
+        verify(validator).validate(Set.of("headerg", "header2g", "foo"));
+    }
+
+    @Test
+    public void shouldValidateUsingColumnHeaderWhenNoMatchAndOnlyTwoColumns() {
+        final var validator = Mockito.mock(DataTableValidator.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
+        when(beanMapper.headers()).thenReturn(List.of(
+                new DatatableHeader(List.of("header"), null, false, null, null),
+                new DatatableHeader(List.of("header2"), null, false, null, null),
+                new DatatableHeader(List.of("header3"), null, false, null, null)
+        ));
+        final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
+
+        typeDefinition.dataTableType().transform(
+                List.of(
+                        row("headerg", "value1"),
+                        row("header2g", "value2")
+                )
+        );
+
+        verify(validator).validate(Set.of("headerg", "header2g"));
     }
 
     @Test
     public void shouldValidateHeadersWithTwoColumn() {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
-        final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
-        Mockito.doThrow(new RuntimeException("error")).when(validator).validate(Set.of("header", "value"));
+        when(beanMapper.headers()).thenReturn(List.of(
+                new DatatableHeader(List.of("header"), null, false, null, null),
+                new DatatableHeader(List.of("header2"), null, false, null, null)
+        ));
+        final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
         typeDefinition.dataTableType().transform(
                 List.of(
@@ -45,17 +98,20 @@ public class BeanDatatableTypeDefinitionTest {
                 )
         );
 
-        Mockito.verify(validator).validate(Set.of("header", "header2"));
-        Mockito.verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
+        verify(validator).validate(Set.of("header", "header2"));
+        verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
     }
-
 
     @Test
     public void shouldRemoveNullColumns() {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
-        final var typeDefinition  = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
-        Mockito.doThrow(new RuntimeException("error")).when(validator).validate(Set.of("header"));
+        final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
+        when(beanMapper.headers()).thenReturn(List.of(
+                new DatatableHeader(List.of("header"), null, false, null, null),
+                new DatatableHeader(List.of("header2"), null, false, null, null),
+                new DatatableHeader(List.of("header3"), null, false, null, null)
+        ));
 
         typeDefinition.dataTableType().transform(
                 List.of(
@@ -65,8 +121,8 @@ public class BeanDatatableTypeDefinitionTest {
                 )
         );
 
-        Mockito.verify(validator).validate(Set.of("header"));
-        Mockito.verify(beanMapper).convert(Map.of("header", "value", "header3", "value 2"));
+        verify(validator).validate(Set.of("header", "header3"));
+        verify(beanMapper).convert(Map.of("header", "value", "header3", "value 2"));
     }
 
     private static List<String> row(String... strings) {
