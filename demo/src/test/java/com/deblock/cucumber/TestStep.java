@@ -23,6 +23,7 @@ public class TestStep {
     @Given("a step with a list")
     public void stepWithList(List<PrimitiveBean> beans) {
         System.out.println("read: " + beans);
+        throw new RuntimeException("error");
     }
 
 

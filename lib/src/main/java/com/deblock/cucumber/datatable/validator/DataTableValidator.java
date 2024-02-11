@@ -37,7 +37,7 @@ public class DataTableValidator {
                 .filter(header -> headers.stream().noneMatch(header::match))
                 .map(it -> it.names().get(0))
                 .collect(Collectors.joining("\", \""));
-        if (nonMatchMandatoryHeader.length() > 0) {
+        if (!nonMatchMandatoryHeader.isEmpty()) {
             throw new DataTableDoesNotMatch(
                     "The following headers are mandatory : \"" + nonMatchMandatoryHeader + "\"\n" + this.description()
             );
