@@ -4,14 +4,10 @@ Feature: Mapping
   Scenario: Map bean with primitive
     Given a step with only one object
       | string | integer | integers      |
-      | s      | a       | 1, 3, 4, 5, 6 |
-    And a step with a list
-      | string | integer | enumValue |
-      | s      | 10      |           |
-      | a      | 11      | VALUE1    |
+      | s      | 1       | 1, 3, 4, 5, 6 |
     And a step with a list of record
       | string | integer | integers | customDTO |
-      | s      | 10      |          |           |
+      | s      | 10      |          | false     |
       | a      | 11      | 3, 1039  | test      |
 
 

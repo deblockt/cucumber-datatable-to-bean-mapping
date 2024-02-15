@@ -12,6 +12,9 @@ public class TestStep {
 
     @CustomDatatableFieldMapper(sample = "valueString", typeDescription = "CustomDTO")
     public static CustomDTO customDTOMapper(String value) {
+        if (value.equals("false")) {
+            throw new IllegalArgumentException("error");
+        }
         return new CustomDTO(value);
     }
 

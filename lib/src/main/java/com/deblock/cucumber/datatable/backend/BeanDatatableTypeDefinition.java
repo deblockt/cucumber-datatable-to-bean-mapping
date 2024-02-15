@@ -2,6 +2,7 @@ package com.deblock.cucumber.datatable.backend;
 
 import com.deblock.cucumber.datatable.backend.exceptions.DatatableMappingException;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
+import com.deblock.cucumber.datatable.mapper.datatable.exception.CellMappingException;
 import com.deblock.cucumber.datatable.validator.DataTableDoesNotMatch;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.CucumberInvocationTargetException;
@@ -53,7 +54,8 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
                     map.values().removeAll(Collections.singleton(null));
                    try {
                         this.validator.validate(map.keySet());
-                   } catch (DataTableDoesNotMatch dataTableDoesNotMatch) {
+                        return this.datatableMapper.convert(map);
+                   } catch (DataTableDoesNotMatch | CellMappingException dataTableDoesNotMatch) {
                         throw new CucumberInvocationTargetException(
                                 this,
                                 new InvocationTargetException(
@@ -61,7 +63,6 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
                                 )
                         );
                    }
-                   return this.datatableMapper.convert(map);
                 });
     }
 

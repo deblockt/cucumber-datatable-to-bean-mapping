@@ -50,7 +50,7 @@ public class DateTypeMetadata implements TypeMetadata {
                 }
             }
 
-            throw new IllegalArgumentException("the value \"" + value + "\" doesn't match date format. Use ISO format or \"now + x day\"");
+            throw new ConversionError("the value \"" + value + "\" doesn't match date format. Use ISO format or \"now + x day\"");
         }
     }
 

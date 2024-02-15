@@ -30,8 +30,10 @@ public class CustomJavaBeanTypeMetadata implements TypeMetadata {
     public Object convert(String value) throws ConversionError {
         try {
             return this.mapper.invoke(null, value);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
             throw new ConversionError("Unable to convert \"" + value + "\" using " + this.getMethodName(this.mapper) + " to return " + this.mapper.getReturnType().getSimpleName(), e);
+        } catch (InvocationTargetException e) {
+            throw new ConversionError(e.getTargetException().getMessage(), e);
         }
     }
 

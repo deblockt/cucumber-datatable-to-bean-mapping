@@ -50,7 +50,7 @@ public class CustomTypeMetadataTest {
 
         final var exception = Assertions.assertThrows(TypeMetadata.ConversionError.class, () -> typeMetadata.convert("aValue"));
 
-        assertThat(exception.getMessage()).isEqualTo("Unable to convert \"aValue\" using CustomBean2.mapperThrowingException to return CustomBean2");
+        assertThat(exception.getMessage()).isEqualTo("error aValue is not supported");
         assertThat(exception.getCause()).isNotNull();
     }
 

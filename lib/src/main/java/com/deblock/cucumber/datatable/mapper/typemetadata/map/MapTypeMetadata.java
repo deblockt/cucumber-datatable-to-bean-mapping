@@ -8,6 +8,7 @@ import io.cucumber.core.internal.com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Type;
 
 public class MapTypeMetadata implements TypeMetadata {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final Type parameterizedType;
 
     public MapTypeMetadata(Type parameterizedType) {
@@ -27,7 +28,7 @@ public class MapTypeMetadata implements TypeMetadata {
     @Override
     public Object convert(String value) throws ConversionError {
         try {
-            return new ObjectMapper().readValue(value, new TypeReference<>() {
+            return OBJECT_MAPPER.readValue(value, new TypeReference<>() {
                 @Override
                 public Type getType() {
                     return MapTypeMetadata.this.parameterizedType;
