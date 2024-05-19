@@ -23,22 +23,34 @@ Using this bean:
 
 ``` java 
 @DataTableWithHeader // this annotation is used to register this class as a Datatable
+                     // This is facultative but may improve test startup performance
 class Bean {
     @Column("column 1") // this annotation register this var as a column of the datatable
     public String column1;
 
     @Column(value = "column2", mandatory = false)
     public String column2;
+    
+    public String column3;
+    
+    @Ignore // this annotation ensure ensure this will not be registered as a column of the datatable
+    public String column4;
 }
 
 // compatible with records
-@DataTableWithHeader // this annotation is used to register this class as a Datatable
 record Bean(
     @Column("column 1") // this annotation register this var as a column of the datatable
     String column1,
     @Column(value = "column2", mandatory = false)
-    String column2
+    String column2,
+    String column4,
+    @Ignore  // this annotation ensure ensure this will not be registered as a column of the datatable
+    String column2  
 ) { }
+
+// ignore class/record completely
+@Ignore
+record Bean(String column1)
 
 ```
 

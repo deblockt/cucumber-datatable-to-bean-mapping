@@ -10,4 +10,7 @@ public interface MapperFactory {
     DatatableMapper build(Class<?> recordClass);
 
     DatatableMapper build(Column column, ColumnNameBuilder name, Type type);
+
+    DatatableMapper build(ColumnNameBuilder name, Type type);
+
 }
