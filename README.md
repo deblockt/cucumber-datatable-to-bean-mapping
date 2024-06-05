@@ -266,3 +266,27 @@ shadowJar {
     mergeServiceFiles()
 }
 ```
+
+### Maven
+
+Using maven you can use the [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/index.html) to solve this issue. 
+You can use this plugin configuration: 
+``` xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>3.6.0</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+            <configuration>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                    <resource>META-INF/services/io.cucumber.core.backend.BackendProviderService</resource>
+                </transformer>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
