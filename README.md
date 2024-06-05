@@ -275,17 +275,12 @@ You can use this plugin configuration:
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-shade-plugin</artifactId>
-    <version>3.6.0</version>
+    <version>3.2.4</version>
     <executions>
         <execution>
             <goals>
                 <goal>shade</goal>
             </goals>
-            <configuration>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                    <resource>META-INF/services/io.cucumber.core.backend.BackendProviderService</resource>
-                </transformer>
-            </configuration>
         </execution>
     </executions>
 </plugin>
