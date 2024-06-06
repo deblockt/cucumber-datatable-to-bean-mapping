@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class PrimitiveTypeMetadataFactoryImpl implements TypeMetadataFactory {
     private final Map<Class<?>, TypeMetadata> primitiveTypeMetadata;
@@ -27,8 +28,9 @@ public class PrimitiveTypeMetadataFactoryImpl implements TypeMetadataFactory {
         primitiveTypeMetadata.put(BigDecimal.class, new NumericTypeMetadata("bigDecimal", "10.10", BigDecimal::new));
         primitiveTypeMetadata.put(BigInteger.class, new NumericTypeMetadata("bigInteger", "10", BigInteger::new));
         primitiveTypeMetadata.put(Boolean.class, new BooleanTypeMetadata());
-        primitiveTypeMetadata.put(String.class, new StringTypeMetadata());
         primitiveTypeMetadata.put(boolean.class, new BooleanTypeMetadata());
+        primitiveTypeMetadata.put(String.class, new StringTypeMetadata());
+        primitiveTypeMetadata.put(UUID.class, new UUIDTypeMetadata());
     }
 
     @Override
