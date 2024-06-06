@@ -5,7 +5,6 @@ import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.mapper.datatable.BaseObjectDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.datatable.ColumnAnnotatedObjectDatatableMapper;
-import com.deblock.cucumber.datatable.mapper.datatable.NotMappedDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.datatable.RecordDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.datatable.SimpleColumnDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
@@ -39,8 +38,8 @@ public class GenericMapperFactory implements MapperFactory {
             if (type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class)) {
                 return new ColumnAnnotatedObjectDatatableMapper(column, this.getBaseObjectDatatableMapper(clazz, nameBuilder));
             }
+            throw ex;
         }
-        return new NotMappedDatatableMapper();
     }
 
     private BaseObjectDatatableMapper<? extends DatatableMapper> getBaseObjectDatatableMapper(Class<?> clazz, ColumnNameBuilder nameBuilder) {
