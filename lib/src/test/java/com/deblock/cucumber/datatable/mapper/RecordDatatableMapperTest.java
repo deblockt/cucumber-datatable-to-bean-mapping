@@ -3,9 +3,12 @@ package com.deblock.cucumber.datatable.mapper;
 import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
+import com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper;
 import com.deblock.cucumber.datatable.mapper.beans.Record;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecord;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecordNameMapping;
+import com.deblock.cucumber.datatable.mapper.beans.RecordWithUnsupportedConverter;
+import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.datatable.RecordDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class RecordDatatableMapperTest {
 
@@ -150,6 +154,16 @@ public class RecordDatatableMapperTest {
         assertThat(result.nonAnnotatedColumn()).isNull();
     }
 
+    @Test
+    public void shouldThrowErrorIfAnnotatedColumnFieldTypeNotSupported() {
+        final var result = assertThrows(
+                NoConverterFound.class,
+                () -> new BeanDatatableMapper(RecordWithUnsupportedConverter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
+        );
+
+        assertThat(result).hasMessage("can not find any converter for class class com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper. You can define your own converter using @CustomDatatableFieldMapper");
+    }
+
     public static class MockMetadataFactory implements TypeMetadataFactory {
 
         @Override
@@ -172,7 +186,7 @@ public class RecordDatatableMapperTest {
                     }
                 };
             }
-            if (type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class)) {
+            if ((type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class) || CustomBeanWithoutMapper.class.equals(type))) {
                 throw new NoConverterFound(type);
             }
 

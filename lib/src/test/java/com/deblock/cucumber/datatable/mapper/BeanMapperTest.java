@@ -6,12 +6,13 @@ import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedObjects;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedRecordNameMapping;
+import com.deblock.cucumber.datatable.mapper.beans.BeanWithUnsupportedConverter;
+import com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithPrivateSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithoutSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanWithPrivateConstructor;
 import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.ParameterizedType;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BeanMapperTest {
 
@@ -85,7 +87,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReturnErrorIfPrivateFieldHasNoSetter() {
-        final var malformedBeanException = Assertions.assertThrows(
+        final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
                 () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithoutSetter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
         );
@@ -96,7 +98,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReturnErrorIfPrivateFieldHasPrivateSetter() {
-        final var malformedBeanException = Assertions.assertThrows(
+        final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
                 () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithPrivateSetter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
         );
@@ -107,7 +109,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReturnErrorIfThereIsNoPublicConstructor() {
-        final var malformedBeanException = Assertions.assertThrows(
+        final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
                 () -> new BeanDatatableMapper(MalformedBeanWithPrivateConstructor.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
         );
@@ -166,6 +168,16 @@ public class BeanMapperTest {
         assertThat(result.nestedWithCustomMapper.ignoredColumn).isEqualTo("nestedWithCustomMapperValue");
     }
 
+    @Test
+    public void shouldThrowErrorIfAnnotatedColumnFieldTypeNotSupported() {
+        final var result = assertThrows(
+                NoConverterFound.class,
+                () -> new BeanDatatableMapper(BeanWithUnsupportedConverter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
+        );
+
+        assertThat(result).hasMessage("can not find any converter for class class com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper. You can define your own converter using @CustomDatatableFieldMapper");
+    }
+
     public static class MockMetadataFactory implements TypeMetadataFactory {
 
         @Override
@@ -189,7 +201,7 @@ public class BeanMapperTest {
                 };
             }
 
-            if (type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class)) {
+            if ((type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class) || CustomBeanWithoutMapper.class.equals(type))) {
                 throw new NoConverterFound(type);
             }
 
