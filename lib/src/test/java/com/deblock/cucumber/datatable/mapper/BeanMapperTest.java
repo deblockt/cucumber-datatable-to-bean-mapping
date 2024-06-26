@@ -27,8 +27,10 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumns() {
-        final var beanMapper = new BeanDatatableMapper(Bean.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
-
+		final var beanMapper = new BeanDatatableMapper(Bean.class,
+				new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()), 
+				()-> List.of("fieldName"));
+		
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
@@ -37,8 +39,10 @@ public class BeanMapperTest {
                 new DatatableHeader(List.of("other bean", "my bean"), "", true, null, null),
                 new DatatableHeader(List.of("private list"), "", false, null, null),
                 new DatatableHeader(List.of("mandatory with default value"), "", true, "default", null),
-                new DatatableHeader(List.of("field with default name", "fieldWithDefaultName"), "", false, null, null)
+                new DatatableHeader(List.of("field with default name", "fieldWithDefaultName"), "", false, null, null),
+                new DatatableHeader(List.of("non annotated column", "nonAnnotatedColumn"), null, false, null, null)
         );
+        
         assertThat(result)
                 .usingRecursiveComparison()
                 .ignoringFields("typeMetadata")
@@ -47,8 +51,10 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumnsOnNestedObjects() {
-        final var beanMapper = new BeanDatatableMapper(BeanWithNestedObjects.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
-
+		final var beanMapper = new BeanDatatableMapper(BeanWithNestedObjects.class,
+				new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()), 
+				()-> List.of("fieldName"));
+		
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
@@ -68,8 +74,10 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReplaceParentName() {
-        final var beanMapper = new BeanDatatableMapper(BeanWithNestedRecordNameMapping.class, new GenericMapperFactory(new RecordDatatableMapperTest.MockMetadataFactory()));
-
+		final var beanMapper = new BeanDatatableMapper(BeanWithNestedRecordNameMapping.class,
+				new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()), 
+				()-> List.of("fieldName"));
+		
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
@@ -89,7 +97,9 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfPrivateFieldHasNoSetter() {
         final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
-                () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithoutSetter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
+                () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithoutSetter.class, 
+                		new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()),
+                		()-> List.of("fieldName"))
         );
 
         assertThat(malformedBeanException.getMessage())
@@ -100,7 +110,9 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfPrivateFieldHasPrivateSetter() {
         final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
-                () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithPrivateSetter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
+                () -> new BeanDatatableMapper(MalformedBeanPrivateColumnWithPrivateSetter.class, 
+                		new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()),
+                		()-> List.of("fieldName"))
         );
 
         assertThat(malformedBeanException.getMessage())
@@ -111,7 +123,9 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfThereIsNoPublicConstructor() {
         final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
-                () -> new BeanDatatableMapper(MalformedBeanWithPrivateConstructor.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
+                () -> new BeanDatatableMapper(MalformedBeanWithPrivateConstructor.class, 
+                		new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()),
+                		()-> List.of("fieldName"))
         );
 
         assertThat(malformedBeanException.getMessage())
@@ -120,7 +134,9 @@ public class BeanMapperTest {
 
     @Test
     public void shouldMapDataToBean() {
-        final var beanMapper = new BeanDatatableMapper(Bean.class,new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
+		final var beanMapper = new BeanDatatableMapper(Bean.class,
+				new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()), 
+				()-> List.of("fieldName"));
 
         final var result = (Bean) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -137,7 +153,9 @@ public class BeanMapperTest {
 
     @Test
     public void shouldSetDefaultValueIfColumnIsNotSet() {
-        final var beanMapper = new BeanDatatableMapper(Bean.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
+        final var beanMapper = new BeanDatatableMapper(Bean.class, 
+        		new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()),
+        		()-> List.of("fieldName"));
 
         final var result = (Bean) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -152,7 +170,9 @@ public class BeanMapperTest {
 
     @Test
     public void shouldMapDataToBeanWithNestedObjectWithAllRequiredObjectFilled() {
-        final var beanMapper = new BeanDatatableMapper(BeanWithNestedObjects.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()));
+        final var beanMapper = new BeanDatatableMapper(BeanWithNestedObjects.class, 
+        		new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()),
+        		()-> List.of("fieldName"));
 
         final var result = (BeanWithNestedObjects) beanMapper.convert(Map.of(
                 "column", "value",
@@ -230,4 +250,5 @@ public class BeanMapperTest {
             };
         }
     }
+    
 }

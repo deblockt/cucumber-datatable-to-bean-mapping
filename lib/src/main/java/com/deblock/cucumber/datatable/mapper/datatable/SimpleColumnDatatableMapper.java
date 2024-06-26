@@ -21,9 +21,14 @@ public class SimpleColumnDatatableMapper implements DatatableMapper {
     private final TypeMetadata typeMetadata;
     private final DatatableHeader header;
 
-    public SimpleColumnDatatableMapper(Column column, ColumnNameBuilder nameBuilder, Type genericType, TypeMetadataFactory typeMetadataFactory) {
+    public SimpleColumnDatatableMapper(ColumnNameBuilder nameBuilder, Type genericType, TypeMetadataFactory typeMetadataFactory) {
         this.typeMetadata = typeMetadataFactory.build(genericType);
-        this.header = new DatatableHeader(column, nameBuilder, typeMetadata);
+        this.header = new DatatableHeader(nameBuilder, typeMetadata);
+    }
+    
+    public SimpleColumnDatatableMapper(Column column, ColumnNameBuilder nameBuilder, Type genericType, TypeMetadataFactory typeMetadataFactory) {
+    	this.typeMetadata = typeMetadataFactory.build(genericType);
+    	this.header = new DatatableHeader(column, nameBuilder, typeMetadata);
     }
 
     @Override

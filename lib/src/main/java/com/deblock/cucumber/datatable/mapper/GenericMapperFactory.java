@@ -13,6 +13,7 @@ import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverter
 import java.lang.reflect.Type;
 
 public class GenericMapperFactory implements MapperFactory {
+	
     private final TypeMetadataFactory typeMetadataFactory;
 
     public GenericMapperFactory(TypeMetadataFactory typeMetadataFactory) {
@@ -36,7 +37,24 @@ public class GenericMapperFactory implements MapperFactory {
             );
         } catch (NoConverterFound ex) {
             if (type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class)) {
-                return new ColumnAnnotatedObjectDatatableMapper(column, this.getBaseObjectDatatableMapper(clazz, nameBuilder));
+                return new ColumnAnnotatedObjectDatatableMapper(column.mandatory(), this.getBaseObjectDatatableMapper(clazz, nameBuilder));
+            }
+        }
+        return new NotMappedDatatableMapper();
+    }
+    
+    @Override
+    public DatatableMapper build(ColumnNameBuilder nameBuilder, Type type) {
+        try {
+            typeMetadataFactory.build(type);
+            return new SimpleColumnDatatableMapper(
+                    nameBuilder,
+                    type,
+                    typeMetadataFactory
+            );
+        } catch (NoConverterFound ex) {
+            if (type instanceof Class<?> clazz && clazz.isAnnotationPresent(DataTableWithHeader.class)) {
+                return new ColumnAnnotatedObjectDatatableMapper(false, this.getBaseObjectDatatableMapper(clazz, nameBuilder));
             }
             throw ex;
         }

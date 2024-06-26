@@ -1,6 +1,7 @@
 package com.deblock.cucumber.datatable.mapper.datatable;
 
 import com.deblock.cucumber.datatable.annotations.Column;
+import com.deblock.cucumber.datatable.annotations.Ignore;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
@@ -23,11 +24,8 @@ import java.util.function.BiConsumer;
 import static java.util.Locale.ENGLISH;
 
 public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatableMapper.FieldData> {
-    private final Constructor<?> constructor;
-
-    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory) {
-        this(clazz, mapperFactory, null);
-    }
+    
+	private final Constructor<?> constructor;
 
     public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, ColumnNameBuilder parentNameBuilder) {
         super(buildFieldsData(clazz, mapperFactory, parentNameBuilder));
@@ -52,13 +50,12 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
 
     private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnNameBuilder columnNameBuilder) {
         return Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(Column.class))
+        		.filter(field -> !field.isAnnotationPresent(Ignore.class))
                 .map(field -> buildFieldData(clazz, field, mapperFactory, columnNameBuilder))
                 .toList();
     }
-
+    
     private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnNameBuilder columnNameBuilder) {
-        final var column = field.getAnnotation(Column.class);
         final var setterName = "set" + capitalize(field.getName());
         final var setter = Arrays.stream(clazz.getMethods())
                 .filter(method -> method.getName().equals(setterName))
@@ -66,14 +63,21 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
                 .findFirst();
 
-        final var datatableMapper = mapperFactory.build(
-            column,
-            new WithParentNameBuilder(
-                    columnNameBuilder,
-                    new ColumnNameBuilderChain(new FromAnnotationColumnNameBuilder(column), new FromFieldNameBuilder(field))
-            ),
-            setter.map(it -> it.getGenericParameterTypes()[0]).orElseGet(field::getGenericType)
-        );
+		final DatatableMapper datatableMapper;
+		if (field.isAnnotationPresent(Column.class)) {
+			final var column = field.getAnnotation(Column.class);
+			datatableMapper = mapperFactory
+					.build(column,
+							new WithParentNameBuilder(columnNameBuilder,
+									new ColumnNameBuilderChain(new FromAnnotationColumnNameBuilder(column),
+											new FromFieldNameBuilder(field))),
+							setter.map(it -> it.getGenericParameterTypes()[0]).orElseGet(field::getGenericType));
+		} else {
+			datatableMapper = mapperFactory
+					.build(new WithParentNameBuilder(columnNameBuilder,
+							new ColumnNameBuilderChain(new FromFieldNameBuilder(field))),
+							setter.map(it -> it.getGenericParameterTypes()[0]).orElseGet(field::getGenericType));
+		}
 
         if (setter.isPresent()) {
             return new FieldData(datatableMapper, (bean, object) -> {

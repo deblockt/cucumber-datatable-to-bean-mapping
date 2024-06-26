@@ -12,6 +12,16 @@ public record DatatableHeader(
         String defaultValue,
         TypeMetadata typeMetadata) {
 
+	public DatatableHeader(ColumnNameBuilder columnNameBuilder, TypeMetadata typeMetadata) {
+		this(
+			columnNameBuilder.build(), 
+			null, 
+			false, 
+			null, 
+			typeMetadata
+		);
+	}
+	
     public DatatableHeader(
             Column column,
             ColumnNameBuilder columnNameBuilder,

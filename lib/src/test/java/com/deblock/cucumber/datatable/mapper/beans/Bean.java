@@ -2,6 +2,7 @@ package com.deblock.cucumber.datatable.mapper.beans;
 
 import com.deblock.cucumber.datatable.annotations.Column;
 import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
+import com.deblock.cucumber.datatable.annotations.Ignore;
 
 import java.util.List;
 
@@ -25,7 +26,10 @@ public class Bean {
     @Column
     public String fieldWithDefaultName;
 
-    private String nonAnnotatedColumn;
+    public String nonAnnotatedColumn;
+
+    @Ignore
+    public String ignoredColumn;
 
     public static class OtherBean {
 

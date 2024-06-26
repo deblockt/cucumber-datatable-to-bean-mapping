@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This function allow to define a customer mapper.
+ * This function allows to define a customer mapper.
  * The annotated function should:
  *   - be static
  *   - have one string parameter

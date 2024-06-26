@@ -1,6 +1,5 @@
-rootProject.name = 'cucumber-datatable-to-bean-mapping-root'
+rootProject.name = 'cucumber-datatable-to-bean-mapping'
 
 include 'lib'
 include 'demo'
 include 'demo-java8'
-
