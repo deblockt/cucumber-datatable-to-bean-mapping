@@ -1,8 +1,11 @@
-package com.deblock.cucumber.datatable.mapper;
+package com.deblock.cucumber.datatable.mapper.datatable;
 
 import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
+import com.deblock.cucumber.datatable.mapper.GenericMapperFactory;
+import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
+import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedObjects;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedRecordNameMapping;
@@ -11,7 +14,6 @@ import com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithPrivateSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithoutSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanWithPrivateConstructor;
-import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
 import com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 import org.junit.jupiter.api.Test;

@@ -8,16 +8,16 @@ import com.deblock.cucumber.datatable.mapper.datatable.ColumnAnnotatedObjectData
 import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
 import com.deblock.cucumber.datatable.mapper.datatable.RecordDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.datatable.SimpleColumnDatatableMapper;
-import com.deblock.cucumber.datatable.mapper.name.DataTableColumnNameBuilder;
+import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 
 import java.lang.reflect.Type;
 
 public class GenericMapperFactory implements MapperFactory {
     private final TypeMetadataFactory typeMetadataFactory;
-    private final DataTableColumnNameBuilder columnNameBuilder;
+    private final ColumnNameBuilder columnNameBuilder;
 
-    public GenericMapperFactory(TypeMetadataFactory typeMetadataFactory, DataTableColumnNameBuilder columnNameBuilder) {
+    public GenericMapperFactory(TypeMetadataFactory typeMetadataFactory, ColumnNameBuilder columnNameBuilder) {
         this.typeMetadataFactory = typeMetadataFactory;
         this.columnNameBuilder = columnNameBuilder;
     }

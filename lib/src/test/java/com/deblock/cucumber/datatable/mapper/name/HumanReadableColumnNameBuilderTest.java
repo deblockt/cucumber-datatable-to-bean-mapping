@@ -13,7 +13,8 @@ public class HumanReadableColumnNameBuilderTest {
     @CsvSource({
             "fieldName,field name",
             "FieldNameMultiWords,field name multi words",
-            "FieldNameDTO,field name dto"
+            "FieldNameDTO,field name dto",
+            "field2,field2"
     })
     public void shouldReturnFieldNameLowerCasesWithSpaces(String input, String expected) {
         final var builder = new HumanReadableColumnNameBuilder();

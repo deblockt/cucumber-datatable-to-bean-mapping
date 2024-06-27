@@ -4,7 +4,7 @@ import com.deblock.cucumber.datatable.mapper.beans.Bean;
 import com.deblock.cucumber.datatable.mapper.beans.Record;
 import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
 import com.deblock.cucumber.datatable.mapper.datatable.RecordDatatableMapper;
-import com.deblock.cucumber.datatable.mapper.name.DataTableColumnNameBuilder;
+import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -14,7 +14,7 @@ public class GenericMapperFactoryTest {
 
     @Test
     public void shouldReturnABeanMapperForARegularClass() {
-        final var factory = new GenericMapperFactory(Mockito.mock(TypeMetadataFactory.class), Mockito.mock(DataTableColumnNameBuilder.class));
+        final var factory = new GenericMapperFactory(Mockito.mock(TypeMetadataFactory.class), Mockito.mock(ColumnNameBuilder.class));
 
         final var result = factory.build(Bean.class);
 
@@ -23,7 +23,7 @@ public class GenericMapperFactoryTest {
 
     @Test
     public void shouldReturnARecordMapperForARecord() {
-        final var factory = new GenericMapperFactory(Mockito.mock(TypeMetadataFactory.class), Mockito.mock(DataTableColumnNameBuilder.class));
+        final var factory = new GenericMapperFactory(Mockito.mock(TypeMetadataFactory.class), Mockito.mock(ColumnNameBuilder.class));
 
         final var result = factory.build(Record.class);
 
@@ -31,7 +31,7 @@ public class GenericMapperFactoryTest {
     }
 
     public void shouldReturnASimpleColumnDatatableMapperIfMetadataIsFound() {
-        final var factory = new GenericMapperFactory(Mockito.mock(TypeMetadataFactory.class), Mockito.mock(DataTableColumnNameBuilder.class));
+        final var factory = new GenericMapperFactory(Mockito.mock(TypeMetadataFactory.class), Mockito.mock(ColumnNameBuilder.class));
 
         final var result = factory.build(Record.class);
 

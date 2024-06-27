@@ -7,7 +7,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class StrictFieldNameColumnNameBuilderTest {
+public class UseFieldNameColumnNameBuilderTest {
 
     @ParameterizedTest
     @CsvSource({
@@ -16,7 +16,7 @@ public class StrictFieldNameColumnNameBuilderTest {
             "fieldNameDTO"
     })
     public void shouldReturnFieldName(String input) {
-        final var builder = new StrictFieldNameColumnNameBuilder();
+        final var builder = new UseFieldNameColumnNameBuilder();
 
         final var result = builder.build(input);
 

@@ -1,0 +1,3 @@
+com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder
+com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder
+com.deblock.cucumber.datatable.mapper.name.UseFieldNameColumnNameBuilder

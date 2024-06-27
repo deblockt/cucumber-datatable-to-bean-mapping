@@ -2,7 +2,7 @@ package com.deblock.cucumber.datatable.mapper.name;
 
 import java.util.List;
 
-public class HumanReadableColumnNameBuilder implements DataTableColumnNameBuilder {
+public class HumanReadableColumnNameBuilder implements ColumnNameBuilder {
     @Override
     public List<String> build(String fieldName) {
         return List.of(

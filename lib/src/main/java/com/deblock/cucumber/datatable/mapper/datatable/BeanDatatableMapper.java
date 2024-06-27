@@ -5,7 +5,7 @@ import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
-import com.deblock.cucumber.datatable.mapper.name.DataTableColumnNameBuilder;
+import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -21,11 +21,7 @@ import static java.util.Locale.ENGLISH;
 public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatableMapper.FieldData> {
     private final Constructor<?> constructor;
 
-    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, DataTableColumnNameBuilder columnNameBuilder) {
-        this(clazz, mapperFactory, new ColumnName(), columnNameBuilder);
-    }
-
-    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentName, DataTableColumnNameBuilder columnNameBuilder) {
+    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentName, ColumnNameBuilder columnNameBuilder) {
         super(buildFieldsData(clazz, mapperFactory, parentName, columnNameBuilder));
         try {
             this.constructor = clazz.getConstructor();
@@ -46,14 +42,14 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
         }
     }
 
-    private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentColumnName, DataTableColumnNameBuilder columnNameBuilder) {
+    private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentColumnName, ColumnNameBuilder columnNameBuilder) {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Column.class))
                 .map(field -> buildFieldData(clazz, field, mapperFactory, parentColumnName, columnNameBuilder))
                 .toList();
     }
 
-    private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnName parentColumnName, DataTableColumnNameBuilder columnNameBuilder) {
+    private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnName parentColumnName, ColumnNameBuilder columnNameBuilder) {
         final var column = field.getAnnotation(Column.class);
         final var setterName = "set" + capitalize(field.getName());
         final var setter = Arrays.stream(clazz.getMethods())

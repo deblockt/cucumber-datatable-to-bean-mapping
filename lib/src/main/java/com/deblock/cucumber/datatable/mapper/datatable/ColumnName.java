@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class ColumnName implements Iterable<String> {
 
@@ -18,7 +19,7 @@ public class ColumnName implements Iterable<String> {
     }
 
     public ColumnName(String ...names) {
-        this.names = Arrays.asList(names);
+        this(Arrays.asList(names));
     }
 
     public static ColumnName merge(List<ColumnName> names) {
@@ -47,8 +48,15 @@ public class ColumnName implements Iterable<String> {
         return this.names.contains(name);
     }
 
-    public String toString() {
-        return String.join(",", this.names);
+    public String firstName() {
+        if (this.names.isEmpty()) {
+            return "";
+        }
+        return this.names.get(0);
+    }
+
+    public boolean hasOneNameEquals(ColumnName other) {
+        return !Collections.disjoint(this.names, other.names);
     }
 
     @Override
@@ -56,11 +64,21 @@ public class ColumnName implements Iterable<String> {
         return this.names.iterator();
     }
 
-    public String firstName() {
-        return this.names.get(0);
+    @Override
+    public String toString() {
+        return String.join(",", this.names);
     }
 
-    public boolean hasOneNameEquals(ColumnName other) {
-        return !Collections.disjoint(this.names, other.names);
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        ColumnName strings = (ColumnName) object;
+        return Objects.equals(names, strings.names);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(names);
     }
 }
