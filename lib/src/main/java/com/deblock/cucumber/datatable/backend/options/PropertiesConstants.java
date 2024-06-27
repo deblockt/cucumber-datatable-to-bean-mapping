@@ -8,4 +8,5 @@ public final class PropertiesConstants {
      * com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder -- You can use human-readable name and fieldName.
      */
     public static final String NAME_BUILDER_CLASS_PROPERTY_NAME = "cucumber.datatable.mapper.name-builder-class";
+    public static final String FIELD_RESOLVER_CLASS_PROPERTY_NAME = "cucumber.datatable.mapper.field-resolver-class";
 }

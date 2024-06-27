@@ -31,6 +31,11 @@ public class ColumnName implements Iterable<String> {
         );
     }
 
+    // TODO check
+    public ColumnName addChild(ColumnName childNames) {
+        return this.addChild(childNames.names);
+    }
+
     public ColumnName addChild(List<String> childNames) {
         if (names.isEmpty()) {
             return new ColumnName(childNames);

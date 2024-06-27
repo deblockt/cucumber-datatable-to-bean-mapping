@@ -1,6 +1,5 @@
 package com.deblock.cucumber.datatable.mapper.datatable;
 
-import com.deblock.cucumber.datatable.annotations.Column;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.validator.DataTableDoesNotMatch;
@@ -9,21 +8,21 @@ import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import java.util.List;
 import java.util.Map;
 
-public class ColumnAnnotatedObjectDatatableMapper implements DatatableMapper {
+public class ChildObjectDatatableMapper implements DatatableMapper {
 
     private final DatatableMapper objectMapper;
-    private final Column annotation;
+    private final FieldResolver.FieldInfo fieldInfo;
     private final DataTableValidator validator;
 
-    public ColumnAnnotatedObjectDatatableMapper(Column annotation, DatatableMapper objectMapper) {
+    public ChildObjectDatatableMapper(FieldResolver.FieldInfo fieldInfo, DatatableMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.annotation = annotation;
+        this.fieldInfo = fieldInfo;
         this.validator = new DataTableValidator(objectMapper.headers(), true);
     }
 
     @Override
     public List<DatatableHeader> headers() {
-        if (this.annotation.mandatory()) {
+        if (!this.fieldInfo.optional()) {
             return this.objectMapper.headers();
         }
         return this.objectMapper.headers()

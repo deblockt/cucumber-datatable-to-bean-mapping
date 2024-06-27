@@ -14,6 +14,7 @@ import com.deblock.cucumber.datatable.mapper.typemetadata.enumeration.EnumTypeMe
 import com.deblock.cucumber.datatable.mapper.typemetadata.map.MapTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.primitive.PrimitiveTypeMetadataFactoryImpl;
 import com.deblock.cucumber.datatable.runtime.ColumnNameBuilderServiceLoader;
+import com.deblock.cucumber.datatable.runtime.FieldResolverServiceLoader;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.Glue;
@@ -30,11 +31,12 @@ import static io.cucumber.core.resource.ClasspathSupport.CLASSPATH_SCHEME;
 
 public class DatatableToBeanMappingBackend implements Backend {
     private final ClasspathScanner classFinder;
-    private final ColumnNameBuilderServiceLoader columnNameBuilderServiceLoader;
+    private final FieldResolverServiceLoader fieldResolveServiceLoader;
 
     public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, FullOptions options) {
         this.classFinder = new ClasspathScanner(classLoaderSupplier);
-        this.columnNameBuilderServiceLoader = new ColumnNameBuilderServiceLoader(options, classLoaderSupplier);
+        final var columnNameBuilderServiceLoader = new ColumnNameBuilderServiceLoader(options, classLoaderSupplier);
+        this.fieldResolveServiceLoader = new FieldResolverServiceLoader(options, classLoaderSupplier, columnNameBuilderServiceLoader);
     }
 
     @Override
@@ -48,7 +50,7 @@ public class DatatableToBeanMappingBackend implements Backend {
             new MapTypeMetadataFactory()
         );
         typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
-        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, columnNameBuilderServiceLoader.loadColumnNameBuilder());
+        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, fieldResolveServiceLoader.loadColumnNameBuilder());
 
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))
