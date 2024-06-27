@@ -7,7 +7,6 @@ import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.datatable.exception.CellMappingException;
-import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -21,9 +20,9 @@ public class SimpleColumnDatatableMapper implements DatatableMapper {
     private final TypeMetadata typeMetadata;
     private final DatatableHeader header;
 
-    public SimpleColumnDatatableMapper(Column column, ColumnNameBuilder nameBuilder, Type genericType, TypeMetadataFactory typeMetadataFactory) {
+    public SimpleColumnDatatableMapper(Column column, ColumnName columnName, Type genericType, TypeMetadataFactory typeMetadataFactory) {
         this.typeMetadata = typeMetadataFactory.build(genericType);
-        this.header = new DatatableHeader(column, nameBuilder, typeMetadata);
+        this.header = new DatatableHeader(column, columnName, typeMetadata);
     }
 
     @Override
@@ -41,7 +40,7 @@ public class SimpleColumnDatatableMapper implements DatatableMapper {
         if (this.header.defaultValue() == null) {
             return null;
         }
-        return convertValue(header.defaultValue(), this.header.names().get(0));
+        return convertValue(header.defaultValue(), this.header.names().firstName());
     }
 
     private Object convertValue(String entry, String headerName) {

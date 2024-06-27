@@ -4,7 +4,6 @@ import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,7 +30,7 @@ public abstract class BaseObjectDatatableMapper<T extends DatatableMapper> imple
         final var mergedHeaders = new ArrayList<DatatableHeader>();
         for (DatatableHeader header: headers) {
             final var sameHeaders = mergedHeaders.stream()
-                    .filter(it -> !Collections.disjoint(it.names(), header.names()))
+                    .filter(it -> it.names().hasOneNameEquals(header.names()))
                     .toList();
             if (sameHeaders.isEmpty()) {
                 mergedHeaders.add(header);
@@ -39,7 +38,7 @@ public abstract class BaseObjectDatatableMapper<T extends DatatableMapper> imple
                 final var headersToMerge = new ArrayList<>(sameHeaders);
                 headersToMerge.add(header);
                 final var mergedHeader = new DatatableHeader(
-                        headersToMerge.stream().flatMap(it -> it.names().stream()).distinct().toList(),
+                        ColumnName.merge(headersToMerge.stream().map(DatatableHeader::names).toList()),
                         join(". ", headersToMerge.stream().map(DatatableHeader::description), ""),
                         headersToMerge.stream().anyMatch(DatatableHeader::optional),
                         join(" | ", headersToMerge.stream().map(DatatableHeader::defaultValue), null),

@@ -2,6 +2,7 @@ package com.deblock.cucumber.datatable.backend;
 
 import com.deblock.cucumber.datatable.backend.exceptions.DatatableMappingException;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
+import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
 import com.deblock.cucumber.datatable.mapper.datatable.exception.CellMappingException;
 import com.deblock.cucumber.datatable.validator.DataTableDoesNotMatch;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
@@ -69,8 +70,7 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
     private long numberOfCommonHeader(List<String> firstRow) {
         return this.datatableMapper.headers().stream()
                 .filter(header ->
-                        header.names().stream()
-                                .anyMatch(firstRow::contains)
+                        header.names().hasOneNameEquals(new ColumnName(firstRow))
                 )
                 .count();
     }

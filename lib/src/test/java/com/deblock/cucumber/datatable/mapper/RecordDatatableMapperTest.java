@@ -8,8 +8,8 @@ import com.deblock.cucumber.datatable.mapper.beans.Record;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecord;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecordNameMapping;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithUnsupportedConverter;
-import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
-import com.deblock.cucumber.datatable.mapper.datatable.RecordDatatableMapper;
+import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
+import com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 import org.junit.jupiter.api.Test;
 
@@ -25,17 +25,17 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumns() {
-        final var beanMapper = new RecordDatatableMapper(Record.class, new GenericMapperFactory(new MockMetadataFactory()));
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(Record.class);
 
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
-                new DatatableHeader(List.of("stringProp"), "", false, null, null),
-                new DatatableHeader(List.of("intProp"), "a property with primitive int", true, "10", null),
-                new DatatableHeader(List.of("other bean", "my bean"), "", true, null, null),
-                new DatatableHeader(List.of("list"), "", false, null, null),
-                new DatatableHeader(List.of("field with default name", "fieldWithDefaultName"), "", false, null, null),
-                new DatatableHeader(List.of("mandatory with default value"), "", true, "default", null)
+                new DatatableHeader(new ColumnName("stringProp"), "", false, null, null),
+                new DatatableHeader(new ColumnName("intProp"), "a property with primitive int", true, "10", null),
+                new DatatableHeader(new ColumnName("other bean", "my bean"), "", true, null, null),
+                new DatatableHeader(new ColumnName("list"), "", false, null, null),
+                new DatatableHeader(new ColumnName("field with default name", "fieldWithDefaultName"), "", false, null, null),
+                new DatatableHeader(new ColumnName("mandatory with default value"), "", true, "default", null)
         );
         assertThat(result)
                 .usingRecursiveComparison()
@@ -45,17 +45,17 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumnsOnNestedObjects() {
-        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecord.class, new GenericMapperFactory(new MockMetadataFactory()));
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecord.class);
 
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
-            new DatatableHeader(List.of("column"), "", false, null, null),
-            new DatatableHeader(List.of("column1", "column 1"), "the column1. the column1 on second object", false, null, null),
-            new DatatableHeader(List.of("column2"), "", false, null, null),
-            new DatatableHeader(List.of("column3"), "", true, null, null),
-            new DatatableHeader(List.of("column4"), "", true, null, null),
-            new DatatableHeader(List.of("nestedWithCustomMapper"), "", false, null, null)
+            new DatatableHeader(new ColumnName("column"), "", false, null, null),
+            new DatatableHeader(new ColumnName("column1", "column 1"), "the column1. the column1 on second object", false, null, null),
+            new DatatableHeader(new ColumnName("column2"), "", false, null, null),
+            new DatatableHeader(new ColumnName("column3"), "", true, null, null),
+            new DatatableHeader(new ColumnName("column4"), "", true, null, null),
+            new DatatableHeader(new ColumnName("nestedWithCustomMapper"), "", false, null, null)
         );
         assertThat(result)
                 .usingRecursiveComparison()
@@ -66,15 +66,15 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldReplaceParentName() {
-        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecordNameMapping.class, new GenericMapperFactory(new MockMetadataFactory()));
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecordNameMapping.class);
 
         final var result = beanMapper.headers();
 
         List<DatatableHeader> expectedHeaders = List.of(
-                new DatatableHeader(List.of("nested object1 column1", "nestedObject1 column1"), "the column1", false, null, null),
-                new DatatableHeader(List.of("nested object1_2 column", "nestedObject1_2 column"), "", false, null, null),
-                new DatatableHeader(List.of("object2 column1"), "the column1", false, null, null),
-                new DatatableHeader(List.of("object2_2 column"), "", false, null, null)
+                new DatatableHeader(new ColumnName("nested object1 column1", "nestedObject1 column1"), "the column1", false, null, null),
+                new DatatableHeader(new ColumnName("nested object1_2 column", "nestedObject1_2 column"), "", false, null, null),
+                new DatatableHeader(new ColumnName("object2 column1"), "the column1", false, null, null),
+                new DatatableHeader(new ColumnName("object2_2 column"), "", false, null, null)
         );
         assertThat(result)
                 .usingRecursiveComparison()
@@ -85,7 +85,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldMapDataToBean() {
-        final var beanMapper = new RecordDatatableMapper(Record.class, new GenericMapperFactory(new MockMetadataFactory()));
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(Record.class);
 
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -104,7 +104,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldMapDataToBeanWithNestedObjectWithAllRequiredObjectFilled() {
-        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecord.class, new GenericMapperFactory(new MockMetadataFactory()));
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecord.class);
 
         final var result = (RecordWithNestedRecord) beanMapper.convert(Map.of(
                 "column", "value",
@@ -122,7 +122,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldSetNestedObjectToNullInCaseOfMissingFields() {
-        final var beanMapper = new RecordDatatableMapper(RecordWithNestedRecord.class, new GenericMapperFactory(new MockMetadataFactory()));
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecord.class);
 
         final var result = (RecordWithNestedRecord) beanMapper.convert(Map.of(
                 "column", "value",
@@ -139,7 +139,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldUseDefaultValueWhenColumnIsNotPresent() {
-        final var beanMapper = new RecordDatatableMapper(Record.class, new GenericMapperFactory(new MockMetadataFactory()));
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(Record.class);
 
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -158,7 +158,7 @@ public class RecordDatatableMapperTest {
     public void shouldThrowErrorIfAnnotatedColumnFieldTypeNotSupported() {
         final var result = assertThrows(
                 NoConverterFound.class,
-                () -> new BeanDatatableMapper(RecordWithUnsupportedConverter.class, new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory()))
+                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithUnsupportedConverter.class)
         );
 
         assertThat(result).hasMessage("can not find any converter for class class com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper. You can define your own converter using @CustomDatatableFieldMapper");

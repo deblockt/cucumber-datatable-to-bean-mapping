@@ -5,11 +5,7 @@ import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
-import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
-import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilderChain;
-import com.deblock.cucumber.datatable.mapper.name.FromAnnotationColumnNameBuilder;
-import com.deblock.cucumber.datatable.mapper.name.FromFieldNameBuilder;
-import com.deblock.cucumber.datatable.mapper.name.WithParentNameBuilder;
+import com.deblock.cucumber.datatable.mapper.name.DataTableColumnNameBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -25,12 +21,12 @@ import static java.util.Locale.ENGLISH;
 public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatableMapper.FieldData> {
     private final Constructor<?> constructor;
 
-    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory) {
-        this(clazz, mapperFactory, null);
+    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, DataTableColumnNameBuilder columnNameBuilder) {
+        this(clazz, mapperFactory, new ColumnName(), columnNameBuilder);
     }
 
-    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, ColumnNameBuilder parentNameBuilder) {
-        super(buildFieldsData(clazz, mapperFactory, parentNameBuilder));
+    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentName, DataTableColumnNameBuilder columnNameBuilder) {
+        super(buildFieldsData(clazz, mapperFactory, parentName, columnNameBuilder));
         try {
             this.constructor = clazz.getConstructor();
         } catch (NoSuchMethodException e) {
@@ -50,14 +46,14 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
         }
     }
 
-    private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnNameBuilder columnNameBuilder) {
+    private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentColumnName, DataTableColumnNameBuilder columnNameBuilder) {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Column.class))
-                .map(field -> buildFieldData(clazz, field, mapperFactory, columnNameBuilder))
+                .map(field -> buildFieldData(clazz, field, mapperFactory, parentColumnName, columnNameBuilder))
                 .toList();
     }
 
-    private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnNameBuilder columnNameBuilder) {
+    private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnName parentColumnName, DataTableColumnNameBuilder columnNameBuilder) {
         final var column = field.getAnnotation(Column.class);
         final var setterName = "set" + capitalize(field.getName());
         final var setter = Arrays.stream(clazz.getMethods())
@@ -66,12 +62,10 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
                 .findFirst();
 
+        final var columnNames = column.value().length == 0 ? columnNameBuilder.build(field.getName()) : Arrays.asList(column.value());
         final var datatableMapper = mapperFactory.build(
             column,
-            new WithParentNameBuilder(
-                    columnNameBuilder,
-                    new ColumnNameBuilderChain(new FromAnnotationColumnNameBuilder(column), new FromFieldNameBuilder(field))
-            ),
+            parentColumnName.addChild(columnNames),
             setter.map(it -> it.getGenericParameterTypes()[0]).orElseGet(field::getGenericType)
         );
 

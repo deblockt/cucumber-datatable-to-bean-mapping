@@ -1,12 +1,10 @@
 package com.deblock.cucumber.datatable.data;
 
 import com.deblock.cucumber.datatable.annotations.Column;
-import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
-
-import java.util.List;
+import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
 
 public record DatatableHeader(
-        List<String> names,
+        ColumnName names,
         String description,
         boolean optional,
         String defaultValue,
@@ -14,11 +12,11 @@ public record DatatableHeader(
 
     public DatatableHeader(
             Column column,
-            ColumnNameBuilder columnNameBuilder,
+            ColumnName columnName,
             TypeMetadata typeMetadata
     ) {
         this(
-            columnNameBuilder.build(),
+            columnName,
             column.description(),
             !column.mandatory() || !column.defaultValue().isEmpty(),
             column.defaultValue().isEmpty() ? null : column.defaultValue(),

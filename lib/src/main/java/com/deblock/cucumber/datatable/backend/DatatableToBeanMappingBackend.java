@@ -4,6 +4,7 @@ import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.GenericMapperFactory;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
+import com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.typemetadata.CompositeTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.collections.CollectionTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.custom.CustomTypeMetadataFactory;
@@ -44,7 +45,7 @@ public class DatatableToBeanMappingBackend implements Backend {
             new MapTypeMetadataFactory()
         );
         typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
-        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory);
+        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, new MultiNameColumnNameBuilder());// TODO read configuration
 
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))

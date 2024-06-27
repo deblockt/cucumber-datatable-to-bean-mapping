@@ -10,7 +10,7 @@ public record RecordBean(
     @Column(value = "string")
     String string,
     @Column(value = "integer")
-    Integer integer,
+    CustomType integer,
     @Column(value = "integers", mandatory = false)
     List<Integer> integers,
     @Column(value = "enumValue", defaultValue = "VALUE2")
@@ -18,4 +18,6 @@ public record RecordBean(
     @Column(value = "customDTO", mandatory = false)
     CustomDTO customDTO
 ) {
+
+    record CustomType(String value) {}
 }
