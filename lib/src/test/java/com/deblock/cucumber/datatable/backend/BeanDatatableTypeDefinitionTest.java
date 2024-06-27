@@ -4,6 +4,7 @@ import com.deblock.cucumber.datatable.backend.exceptions.DatatableMappingExcepti
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
 import com.deblock.cucumber.datatable.mapper.datatable.BeanDatatableMapper;
+import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
 import com.deblock.cucumber.datatable.validator.DataTableDoesNotMatch;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.CucumberInvocationTargetException;
@@ -30,8 +31,8 @@ public class BeanDatatableTypeDefinitionTest {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         when(beanMapper.headers()).thenReturn(List.of(
-                new DatatableHeader(List.of("header"), null, false, null, null),
-                new DatatableHeader(List.of("header2"), null, false, null, null)
+                new DatatableHeader(new ColumnName("header"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, false, null, null)
         ));
         final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
@@ -51,9 +52,9 @@ public class BeanDatatableTypeDefinitionTest {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         when(beanMapper.headers()).thenReturn(List.of(
-                new DatatableHeader(List.of("header"), null, false, null, null),
-                new DatatableHeader(List.of("header2"), null, false, null, null),
-                new DatatableHeader(List.of("header3"), null, false, null, null)
+                new DatatableHeader(new ColumnName("header"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header3"), null, false, null, null)
         ));
         final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
@@ -72,9 +73,9 @@ public class BeanDatatableTypeDefinitionTest {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         when(beanMapper.headers()).thenReturn(List.of(
-                new DatatableHeader(List.of("header"), null, false, null, null),
-                new DatatableHeader(List.of("header2"), null, false, null, null),
-                new DatatableHeader(List.of("header3"), null, false, null, null)
+                new DatatableHeader(new ColumnName("header"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header3"), null, false, null, null)
         ));
         final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
@@ -93,8 +94,8 @@ public class BeanDatatableTypeDefinitionTest {
         final var validator = Mockito.mock(DataTableValidator.class);
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         when(beanMapper.headers()).thenReturn(List.of(
-                new DatatableHeader(List.of("header"), null, false, null, null),
-                new DatatableHeader(List.of("header2"), null, false, null, null)
+                new DatatableHeader(new ColumnName("header"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, false, null, null)
         ));
         final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
 
@@ -115,9 +116,9 @@ public class BeanDatatableTypeDefinitionTest {
         final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
         final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
         when(beanMapper.headers()).thenReturn(List.of(
-                new DatatableHeader(List.of("header"), null, false, null, null),
-                new DatatableHeader(List.of("header2"), null, false, null, null),
-                new DatatableHeader(List.of("header3"), null, false, null, null)
+                new DatatableHeader(new ColumnName("header"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header3"), null, false, null, null)
         ));
 
         typeDefinition.dataTableType().transform(
@@ -139,9 +140,9 @@ public class BeanDatatableTypeDefinitionTest {
         Mockito.doThrow(new DataTableDoesNotMatch("error")).when(validator).validate(any());
         final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
         when(beanMapper.headers()).thenReturn(List.of(
-                new DatatableHeader(List.of("header"), null, false, null, null),
-                new DatatableHeader(List.of("header2"), null, false, null, null),
-                new DatatableHeader(List.of("header3"), null, false, null, null)
+                new DatatableHeader(new ColumnName("header"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, false, null, null),
+                new DatatableHeader(new ColumnName("header3"), null, false, null, null)
         ));
 
         final var dataTable = List.of(

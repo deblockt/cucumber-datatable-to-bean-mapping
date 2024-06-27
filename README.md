@@ -15,7 +15,7 @@ It's available on maven central repository.
 You can find it
 here [io.github.deblockt:cucumber-datatable-to-bean-mapping](https://mvnrepository.com/artifact/io.github.deblockt/cucumber-datatable-to-bean-mapping/latest)
 
-This lib support only java 17.
+This lib support only java 17+.
 
 ## Sample
 
@@ -27,7 +27,7 @@ class Bean {
     @Column("column 1") // this annotation register this var as a column of the datatable
     public String column1;
 
-    @Column(value = "column2", mandatory = false)
+    @Column(mandatory = false) // the column value is optional. If not specified the field name will be used
     public String column2;
 }
 
@@ -36,7 +36,7 @@ class Bean {
 record Bean(
     @Column("column 1") // this annotation register this var as a column of the datatable
     String column1,
-    @Column(value = "column2", mandatory = false)
+    @Column(mandatory = false) // the column value is optional. If not specified the field name will be used
     String column2
 ) { }
 
@@ -63,9 +63,9 @@ You can write this step:
 
 ``` gherkin
 Then a step with a datatable
-  | column 1 | column 2 |
-  | value1   | value2   |
-  | value3   |          | 
+  | column 1 | column2 |
+  | value1   | value2  |
+  | value3   |         | 
 ```
 
 And That's all. The mapping is performed automatically.
@@ -83,26 +83,31 @@ The following parameters are available on the `@Column` annotation
 
 ## Java type support
 
-The following types can be auto mapped: 
-  - `int`, `long`, `short`, `float`, `double`, `BigDecimal`, `BigInteger`: decimal separator can be `.` or `,`. Example `10.05`
-  - `boolean`: true/false
-  - `string`: trim the string from the datatable
-  - `enum`: the enum name can be used on datatable
-  - `List`, `Set`, `Collection`: the generic can be a type managed by the mapping. Item on datatable are split using a `,`
-  - `OffsetDateTime`, `LocalDateTime`, `LocalDate`: date time. Can be ISO formatted date or relative date. 
-     
-     Relative date can be specified using `now` keyword.  
-     
-     You can add or subtract amount of time from now. `now + 1 day`, `now - 3 weeks`.
-    
-     `now` will return the same date at each step of the test.
+The following types can be auto mapped:
+
+- `int`, `long`, `short`, `float`, `double`, `BigDecimal`, `BigInteger`: decimal separator can be `.` or `,`.
+  Example `10.05`
+- `boolean`: true/false
+- `string`: trim the string from the datatable
+- `enum`: the enum name can be used on datatable
+- `List`, `Set`, `Collection`: the generic can be a type managed by the mapping. Item on datatable are split using a `,`
+- `OffsetDateTime`, `LocalDateTime`, `LocalDate`: date time. Can be ISO formatted date or relative date.
+
+  Relative date can be specified using `now` keyword.
+
+  You can add or subtract amount of time from now. `now + 1 day`, `now - 3 weeks`.
+
+  `now` will return the same date at each step of the test.
 
 ### Custom type support
 
-If you want to use a custom type on datatable, you can write custom mapper. It can be useful when you want to convert id to object. 
+If you want to use a custom type on datatable, you can write custom mapper. It can be useful when you want to convert id
+to object.
 
 For example, If you have an object `Customer`:
+
 ```java
+
 @DataTableWithHeader
 record Customer(
         @Column("code")
@@ -111,9 +116,12 @@ record Customer(
         String firstName,
         @Column("last name")
         String lastName
-) {}
+) {
+}
 ```
-And you want map a datatable to the following bean: 
+
+And you want map a datatable to the following bean:
+
 ``` java
 @DataTableWithHeader
 record Bean(
@@ -121,20 +129,23 @@ record Bean(
     Customer customer
 ) { }
 ```
+
 If you want this steps to work
+
 ```gherkin
 Given the following customer exists
-  | code     | first name | last name |
-  | deblockt | Thomas     | Deblock   |
+| code     | first name | last name |
+| deblockt | Thomas     | Deblock   |
 When I want to do something with a customer
-  | customer code |
-  | deblockt      |
+| customer code |
+| deblockt      |
 ```
 
-You need to write a function to map a string to a Customer. 
+You need to write a function to map a string to a Customer.
 The function should be provided on your steps package.
 
 ```java
+
 @CustomDatatableFieldMapper(sample = "cucumberCode", typeDescription = "Customer")
 public static Customer customerMapper(String customerCode) {
     return TestContext.getCustomer(customerCode);
@@ -143,74 +154,89 @@ public static Customer customerMapper(String customerCode) {
 
 ## Nested Datatable object support
 
-If you have big datatable, you can organize your objects using nested object. 
-For example, if you have a `Customer` object, you can have a `PersonalInformation` Object. 
+If you have big datatable, you can organize your objects using nested object.
+For example, if you have a `Customer` object, you can have a `PersonalInformation` Object.
+
 ```java
+
 @DataTableWithHeader
 record Customer(
-    @Column
-    String id,
-    @Column
-    PersonalInformation personalInformation
-) {}
+        @Column
+        String id,
+        @Column
+        PersonalInformation personalInformation
+) {
+}
 
 @DataTableWithHeader
 record PersonalInformation(
-    @Column
-    String firstName,
-    @Column
-    String lastName
-) {}
+        @Column
+        String firstName,
+        @Column
+        String lastName
+) {
+}
 ```
 
-Using these objects, the datatable will look like 
+Using these objects, the datatable will look like
+
 ```gherkin
 | id | first name | last name |
 | 10 | Thomas     | Deblock   |
 ```
 
-Now If you another object `Conversation` with two customer, like that: 
+Now If you another object `Conversation` with two customer, like that:
+
 ```java
+
 @DataTableWithHeader
 record Conversation(
-    @Column 
-    Customer customer1,
-    @Column
-    Customer customer2
-) {}
+        @Column
+        Customer customer1,
+        @Column
+        Customer customer2
+) {
+}
 ```
 
-If you write a datatable, you can not know if `first name` column is the first name of the `customer1` or the `customer2`.
-To fix this issue, you can override the fields name using `<parent_name>`, see this example: 
+If you write a datatable, you can not know if `first name` column is the first name of the `customer1` or
+the `customer2`.
+To fix this issue, you can override the fields name using `<parent_name>`, see this example:
+
 ```java
+
 @DataTableWithHeader
 record Conversation(
-    @Column(value = "customer1", mandatory = false)
-    Customer customer1,
-    @Column(value = "customer2", mandatory = false)
-    Customer customer2
-) {}
+        @Column(value = "customer1", mandatory = false)
+        Customer customer1,
+        @Column(value = "customer2", mandatory = false)
+        Customer customer2
+) {
+}
 
 // parent_name will be replaced by customer1 or customer2
 @DataTableWithHeader
 record Customer(
-        @Column("<parent_name> id") 
+        @Column("<parent_name> id")
         String id,
         @Column("<parent_name>")
         PersonalInformation personalInformation
-) {}
+) {
+}
 
 // parent_name will be replaced by customer1 or customer2 coming from personalInformation annotation
 @DataTableWithHeader
 record PersonalInformation(
-        @Column("<parent_name> first name") 
+        @Column("<parent_name> first name")
         String firstName,
         @Column("<parent_name> last name")
         String lastName
-) {}
+) {
+}
 ```
 
 Using these objects, the following datatable will works:
+
 ```gherkin
 # generate a Conversation object with only a customer1, and null for customer2
 | customer1 id | customer1 first name | customer1 last name |
@@ -225,20 +251,40 @@ Using these objects, the following datatable will works:
 | 10           | Thomas               | Deblock             | 11           | Nicolas              | Deblock             |
 ```
 
+## Configuration
+
+You can configure some feature of this library to suit your coding preferences. 
+The configuration work as the same way as [default configuration](https://cucumber.io/docs/cucumber/api/?lang=java#options)
+
+The following properties are available on `cucumber.properties`, or using env var or system properties.
+```properties
+# The property cucumber.datatable.mapper.nameBuilderClass accepts these values: 
+# com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder -- The field name is used and write using human-readable name. Example "first name"
+# com.deblock.cucumber.datatable.mapper.name.UseFieldNameColumnNameBuilder -- The field name is used without any transformation. Example "firstName"
+# com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder -- You can use human-readable name and fieldName.
+cucumber.datatable.mapper.name-builder-class=com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder
+```
+
 ## Usage on a fat/uber jar
 
-If you need to build an executable fat jar to run your cucumber, you should add some configuration to work with this library.
+If you need to build an executable fat jar to run your cucumber, you should add some configuration to work with this
+library.
 
 This library use the [java SPI definition](https://www.baeldung.com/java-spi) to inject some class on cucumber runtime.
 
-When you build a fat jar, this configuration can be override by cucumber definition, so we need to merge configuration files.
+When you build a fat jar, this configuration can be override by cucumber definition, so we need to merge configuration
+files.
 
-### Gradle 
+### Gradle
 
-Using gradle you can use the [shadow plugin](https://imperceptiblethoughts.com/shadow/introduction/) to solve this issue.
-You can read [this chapter](https://imperceptiblethoughts.com/shadow/configuration/merging/#merging-service-descriptor-files) to see how to merge configuration files.
+Using gradle you can use the [shadow plugin](https://imperceptiblethoughts.com/shadow/introduction/) to solve this
+issue.
+You can
+read [this chapter](https://imperceptiblethoughts.com/shadow/configuration/merging/#merging-service-descriptor-files) to
+see how to merge configuration files.
 
 example of task configuration:
+
 ``` gradle
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
@@ -269,8 +315,10 @@ shadowJar {
 
 ### Maven
 
-Using maven you can use the [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/index.html) to solve this issue. 
-You can use this plugin configuration: 
+Using maven you can use the [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/index.html) to
+solve this issue.
+You can use this plugin configuration:
+
 ``` xml
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>

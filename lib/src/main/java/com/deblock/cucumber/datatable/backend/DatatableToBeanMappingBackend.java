@@ -1,6 +1,7 @@
 package com.deblock.cucumber.datatable.backend;
 
 import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
+import com.deblock.cucumber.datatable.backend.options.FullOptions;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.GenericMapperFactory;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
@@ -12,6 +13,7 @@ import com.deblock.cucumber.datatable.mapper.typemetadata.date.TemporalTypeMetad
 import com.deblock.cucumber.datatable.mapper.typemetadata.enumeration.EnumTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.map.MapTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.primitive.PrimitiveTypeMetadataFactoryImpl;
+import com.deblock.cucumber.datatable.runtime.ColumnNameBuilderServiceLoader;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.Glue;
@@ -28,15 +30,17 @@ import static io.cucumber.core.resource.ClasspathSupport.CLASSPATH_SCHEME;
 
 public class DatatableToBeanMappingBackend implements Backend {
     private final ClasspathScanner classFinder;
+    private final ColumnNameBuilderServiceLoader columnNameBuilderServiceLoader;
 
-    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier) {
+    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, FullOptions options) {
         this.classFinder = new ClasspathScanner(classLoaderSupplier);
+        this.columnNameBuilderServiceLoader = new ColumnNameBuilderServiceLoader(options, classLoaderSupplier);
     }
 
     @Override
     public void loadGlue(Glue glue, List<URI> gluePaths) {
         final var customTypeMetadataFactory = new CustomTypeMetadataFactory(this.classFinder, gluePaths);
-        var typeMetadataFactory = new CompositeTypeMetadataFactory(
+        final var typeMetadataFactory = new CompositeTypeMetadataFactory(
             customTypeMetadataFactory,
             new PrimitiveTypeMetadataFactoryImpl(),
             new TemporalTypeMetadataFactory(new StaticGetTimeService()),
@@ -44,7 +48,7 @@ public class DatatableToBeanMappingBackend implements Backend {
             new MapTypeMetadataFactory()
         );
         typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
-        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory);
+        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, columnNameBuilderServiceLoader.loadColumnNameBuilder());
 
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))

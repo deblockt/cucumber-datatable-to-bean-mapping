@@ -2,25 +2,24 @@ package com.deblock.cucumber.datatable.validator.builder;
 
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
+import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
 import org.mockito.Mockito;
-
-import java.util.List;
 
 public class HeaderBuilder {
 
-    private final List<String> names;
+    private final ColumnName names;
     private boolean mandatory;
     private String description;
     private String defaultValue;
     private TypeMetadata typeMetadata;
 
-    public HeaderBuilder(List<String> names) {
+    public HeaderBuilder(ColumnName names) {
         this.names = names;
         this.typeMetadata = typeMetadata("string", "string");
     }
 
     public static HeaderBuilder header(String... names) {
-        return new HeaderBuilder(List.of(names));
+        return new HeaderBuilder(new ColumnName(names));
     }
 
     public static TypeMetadata typeMetadata(String sample, String typeDescription) {
