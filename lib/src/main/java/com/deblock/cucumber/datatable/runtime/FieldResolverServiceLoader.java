@@ -18,7 +18,7 @@ public class FieldResolverServiceLoader {
         this.columnNameBuilderServiceLoader = columnNameBuilderServiceLoader;
     }
 
-    public FieldResolver loadColumnNameBuilder() {
+    public FieldResolver loadFieldResolverBuilder() {
         ServiceLoader<FieldResolver> loader = ServiceLoader.load(FieldResolver.class, classLoaderSupplier.get());
         Class<? extends FieldResolver> expectedClass = this.options.getFieldResolverClass();
 

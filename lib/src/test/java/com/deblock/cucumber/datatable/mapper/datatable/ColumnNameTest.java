@@ -17,7 +17,7 @@ public class ColumnNameTest {
         public void shouldReturnChildOnEmptyName() {
             final var name = new ColumnName();
 
-            final var result = name.addChild(List.of("name1", "name 2"));
+            final var result = name.addChild(new ColumnName("name1", "name 2"));
 
             assertThat(result).isEqualTo(new ColumnName("name1", "name 2"));
         }
@@ -26,7 +26,7 @@ public class ColumnNameTest {
         public void shouldAddNameOnMultiName() {
             final var name = new ColumnName("parent1", "parent2");
 
-            final var result = name.addChild(List.of("name1", "<parent_name> name 2"));
+            final var result = name.addChild(new ColumnName("name1", "<parent_name> name 2"));
 
             assertThat(result).isEqualTo(new ColumnName("name1", "parent1 name 2", "parent2 name 2"));
         }

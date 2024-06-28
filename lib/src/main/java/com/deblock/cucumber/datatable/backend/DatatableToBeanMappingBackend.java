@@ -50,7 +50,7 @@ public class DatatableToBeanMappingBackend implements Backend {
             new MapTypeMetadataFactory()
         );
         typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
-        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, fieldResolveServiceLoader.loadColumnNameBuilder());
+        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, fieldResolveServiceLoader.loadFieldResolverBuilder());
 
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))
