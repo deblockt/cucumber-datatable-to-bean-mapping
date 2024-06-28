@@ -1,11 +1,9 @@
 package com.deblock.cucumber.datatable.mapper.datatable;
 
-import com.deblock.cucumber.datatable.annotations.Column;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
-import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -21,8 +19,8 @@ import static java.util.Locale.ENGLISH;
 public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatableMapper.FieldData> {
     private final Constructor<?> constructor;
 
-    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentName, ColumnNameBuilder columnNameBuilder) {
-        super(buildFieldsData(clazz, mapperFactory, parentName, columnNameBuilder));
+    public BeanDatatableMapper(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentName, FieldResolver fieldResolver) {
+        super(buildFieldsData(clazz, mapperFactory, parentName, fieldResolver));
         try {
             this.constructor = clazz.getConstructor();
         } catch (NoSuchMethodException e) {
@@ -42,26 +40,25 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
         }
     }
 
-    private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentColumnName, ColumnNameBuilder columnNameBuilder) {
+    private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentColumnName, FieldResolver fieldResolver) {
         return Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(Column.class))
-                .map(field -> buildFieldData(clazz, field, mapperFactory, parentColumnName, columnNameBuilder))
+                .flatMap(field ->
+                    fieldResolver.fieldInfo(field, clazz).stream()
+                                .map(fieldInfo -> buildFieldData(clazz, field, mapperFactory, parentColumnName, fieldInfo))
+                )
                 .toList();
     }
 
-    private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnName parentColumnName, ColumnNameBuilder columnNameBuilder) {
-        final var column = field.getAnnotation(Column.class);
+    private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnName parentColumnName, FieldResolver.FieldInfo fieldInfo) {
         final var setterName = "set" + capitalize(field.getName());
         final var setter = Arrays.stream(clazz.getMethods())
                 .filter(method -> method.getName().equals(setterName))
                 .filter(method -> method.getParameters().length == 1)
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
                 .findFirst();
-
-        final var columnNames = column.value().length == 0 ? columnNameBuilder.build(field.getName()) : Arrays.asList(column.value());
         final var datatableMapper = mapperFactory.build(
-            column,
-            parentColumnName.addChild(columnNames),
+            fieldInfo,
+            parentColumnName.addChild(fieldInfo.columnName()),
             setter.map(it -> it.getGenericParameterTypes()[0]).orElseGet(field::getGenericType)
         );
 

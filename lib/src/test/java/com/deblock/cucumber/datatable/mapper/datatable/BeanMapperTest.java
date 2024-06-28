@@ -14,6 +14,7 @@ import com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithPrivateSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithoutSetter;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanWithPrivateConstructor;
+import com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumns() {
-        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(Bean.class);
 
         final var result = beanMapper.headers();
@@ -51,7 +52,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumnsOnNestedObjects() {
-        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(BeanWithNestedObjects.class);
 
         final var result = beanMapper.headers();
@@ -73,7 +74,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldReplaceParentName() {
-        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(BeanWithNestedRecordNameMapping.class);
 
         final var result = beanMapper.headers();
@@ -95,7 +96,7 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfPrivateFieldHasNoSetter() {
         final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
-                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(MalformedBeanPrivateColumnWithoutSetter.class)
         );
 
@@ -107,7 +108,7 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfPrivateFieldHasPrivateSetter() {
         final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
-                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(MalformedBeanPrivateColumnWithPrivateSetter.class)
         );
 
@@ -119,7 +120,7 @@ public class BeanMapperTest {
     public void shouldReturnErrorIfThereIsNoPublicConstructor() {
         final var malformedBeanException = assertThrows(
                 MalformedBeanException.class,
-                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                     .build(MalformedBeanWithPrivateConstructor.class)
         );
 
@@ -129,7 +130,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldMapDataToBean() {
-        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(Bean.class);
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver()).build(Bean.class);
 
         final var result = (Bean) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -146,7 +147,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldSetDefaultValueIfColumnIsNotSet() {
-        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(Bean.class);
 
         final var result = (Bean) beanMapper.convert(Map.of(
@@ -162,7 +163,7 @@ public class BeanMapperTest {
 
     @Test
     public void shouldMapDataToBeanWithNestedObjectWithAllRequiredObjectFilled() {
-        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(BeanWithNestedObjects.class);
 
         final var result = (BeanWithNestedObjects) beanMapper.convert(Map.of(
@@ -183,11 +184,17 @@ public class BeanMapperTest {
     public void shouldThrowErrorIfAnnotatedColumnFieldTypeNotSupported() {
         final var result = assertThrows(
                 NoConverterFound.class,
-                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder())
+                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
                 .build(BeanWithUnsupportedConverter.class)
         );
 
         assertThat(result).hasMessage("can not find any converter for class class com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper. You can define your own converter using @CustomDatatableFieldMapper");
+    }
+
+    public FieldResolver defaultFieldResolver() {
+        final var fieldResolver = new DeclarativeFieldResolver();
+        fieldResolver.configure(new MultiNameColumnNameBuilder());
+        return fieldResolver;
     }
 
     public static class MockMetadataFactory implements TypeMetadataFactory {

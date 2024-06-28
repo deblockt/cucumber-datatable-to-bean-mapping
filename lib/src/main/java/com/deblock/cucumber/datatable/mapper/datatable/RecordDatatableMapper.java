@@ -1,9 +1,7 @@
 package com.deblock.cucumber.datatable.mapper.datatable;
 
-import com.deblock.cucumber.datatable.annotations.Column;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
-import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -15,12 +13,12 @@ import java.util.Map;
 public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMapper> {
     private final Constructor<?> constructor;
 
-    public RecordDatatableMapper(Class<?> recordClass, MapperFactory mapperFactory, ColumnNameBuilder columnNameBuilder) {
-        this(recordClass, mapperFactory, new ColumnName(), columnNameBuilder);
+    public RecordDatatableMapper(Class<?> recordClass, MapperFactory mapperFactory, FieldResolver fieldResolver) {
+        this(recordClass, mapperFactory, new ColumnName(), fieldResolver);
     }
 
-    public RecordDatatableMapper(Class<?> recordClass, MapperFactory mapperFactory, ColumnName columnName, ColumnNameBuilder columnNameBuilder) {
-        super(readRecordFields(recordClass, mapperFactory, columnName, columnNameBuilder));
+    public RecordDatatableMapper(Class<?> recordClass, MapperFactory mapperFactory, ColumnName columnName, FieldResolver fieldResolver) {
+        super(readRecordFields(recordClass, mapperFactory, columnName, fieldResolver));
 
         final var types = Arrays.stream(recordClass.getRecordComponents())
                 .map(RecordComponent::getType)
@@ -44,26 +42,21 @@ public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMa
         }
     }
 
-    private static List<DatatableMapper> readRecordFields(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentName, ColumnNameBuilder columnNameBuilder) {
+    private static List<DatatableMapper> readRecordFields(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentName, FieldResolver fieldResolver) {
         final var components = clazz.getRecordComponents();
         return Arrays.stream(components)
-                .map(recordComponent -> {
-                    if (recordComponent.isAnnotationPresent(Column.class)) {
-                        return buildDatatableMapper(recordComponent, mapperFactory, parentName, columnNameBuilder);
-                    } else {
-                        return new NotMappedDatatableMapper();
-                    }
-                })
+                .map(recordComponent ->
+                    fieldResolver.fieldInfo(recordComponent, clazz)
+                            .map(fieldInfo -> buildDatatableMapper(recordComponent, mapperFactory, parentName, fieldInfo))
+                            .orElseGet(NotMappedDatatableMapper::new)
+                )
                 .toList();
     }
 
-    private static DatatableMapper buildDatatableMapper(RecordComponent recordComponent, MapperFactory mapperFactory, ColumnName parentName, ColumnNameBuilder columnNameBuilder) {
-        final var column = recordComponent.getAnnotation(Column.class);
-
-        final var name = column.value().length == 0 ? columnNameBuilder.build(recordComponent.getName()) : Arrays.asList(column.value());
+    private static DatatableMapper buildDatatableMapper(RecordComponent recordComponent, MapperFactory mapperFactory, ColumnName parentName, FieldResolver.FieldInfo fieldInfo) {
         return mapperFactory.build(
-                column,
-                parentName.addChild(name),
+                fieldInfo,
+                parentName.addChild(fieldInfo.columnName()),
                 recordComponent.getGenericType()
         );
     }

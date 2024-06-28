@@ -7,7 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation allow to define a dataTable column.
- * The mapped name can be defined by value field.
+ * The column name can be defined by `value` field.
+ * If value is not set, the column name is used to build the column name depending on the cucumber.datatable.mapper.name-builder-class property.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER})
