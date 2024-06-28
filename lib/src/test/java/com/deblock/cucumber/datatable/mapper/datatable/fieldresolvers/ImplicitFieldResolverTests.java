@@ -13,14 +13,14 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TakeAllFieldFieldResolverTests {
+public class ImplicitFieldResolverTests {
 
     @Nested
     public class Bean {
         @Test
         public void shouldReturnAllColumnInfoOnAnnotatedField() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(BeanWithPublicFieldColumnAnnotated.class.getField("field"), BeanWithPublicFieldColumnAnnotated.class);
@@ -36,7 +36,7 @@ public class TakeAllFieldFieldResolverTests {
         @Test
         public void shouldReturnEmptyIfColumnIsAnnotatedWithIgnoreAndColumn() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(BeanWithPublicFieldColumnAnnotated.class.getField("fieldWithIgnoreAndColumn"), BeanWithPublicFieldColumnAnnotated.class);
@@ -48,7 +48,7 @@ public class TakeAllFieldFieldResolverTests {
         public void shouldBuildInfoWhenColumnAnnotationHasNaParams() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
             Mockito.when(columnNameBuilder.build("fieldWithDefaultValues")).thenReturn(List.of("mock name"));
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(BeanWithPublicFieldColumnAnnotated.class.getField("fieldWithDefaultValues"), BeanWithPublicFieldColumnAnnotated.class);
@@ -65,7 +65,7 @@ public class TakeAllFieldFieldResolverTests {
         public void shouldReturnFieldInfoWhenFieldHasNoAnnotation() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
             Mockito.when(columnNameBuilder.build("field")).thenReturn(List.of("mock name"));
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(BeanWithPublicFieldNotAnnotated.class.getField("field"), BeanWithPublicFieldNotAnnotated.class);
@@ -81,7 +81,7 @@ public class TakeAllFieldFieldResolverTests {
         @Test
         public void shouldReturnEmptyIfColumnIsAnnotatedWithIgnore() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(BeanWithPublicFieldNotAnnotated.class.getField("ignoreField"), BeanWithPublicFieldNotAnnotated.class);
@@ -93,7 +93,7 @@ public class TakeAllFieldFieldResolverTests {
         public void shouldReturnFieldInfoIfNonAnnotatedFieldHasSetter() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
             Mockito.when(columnNameBuilder.build("privateFieldWithSetter")).thenReturn(List.of("mock name"));
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
             final var fields = BeanWithPublicFieldNotAnnotated.class.getDeclaredFields();
             final var result = fieldResolver.fieldInfo(fields[2], BeanWithPublicFieldNotAnnotated.class);
@@ -109,7 +109,7 @@ public class TakeAllFieldFieldResolverTests {
         @Test
         public void shouldReturnEmptyIfNonAnnotatedFieldHasNoSetter() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
             final var fields = BeanWithPublicFieldNotAnnotated.class.getDeclaredFields();
             final var result = fieldResolver.fieldInfo(fields[3], BeanWithPublicFieldNotAnnotated.class);
@@ -120,7 +120,7 @@ public class TakeAllFieldFieldResolverTests {
         @Test
         public void shouldReturnEmptyIfNonAnnotatedFieldHasMalformedSetter() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
             final var fields = BeanWithPublicFieldNotAnnotated.class.getDeclaredFields();
             final var result = fieldResolver.fieldInfo(fields[4], BeanWithPublicFieldNotAnnotated.class);
@@ -134,7 +134,7 @@ public class TakeAllFieldFieldResolverTests {
         @Test
         public void shouldReturnAllColumnInfo() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(RecordWithPublicFieldColumnAnnotated.class.getRecordComponents()[0], RecordWithPublicFieldColumnAnnotated.class);
@@ -150,7 +150,7 @@ public class TakeAllFieldFieldResolverTests {
         @Test
         public void shouldReturnEmptyIfColumnIsAnnotatedWithIgnoreAndColumn() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(RecordWithPublicFieldColumnAnnotated.class.getRecordComponents()[2], BeanWithPublicFieldColumnAnnotated.class);
@@ -162,7 +162,7 @@ public class TakeAllFieldFieldResolverTests {
         public void shouldReturnFieldInfoIfItIsNotAnnotatedWithColumn() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
             Mockito.when(columnNameBuilder.build("field")).thenReturn(List.of("mock name"));
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(RecordWithPublicFieldNotAnnotated.class.getRecordComponents()[0], RecordWithPublicFieldNotAnnotated.class);
@@ -179,7 +179,7 @@ public class TakeAllFieldFieldResolverTests {
         public void shouldBuildInfoWhenColumnAnnotationHasNaParams() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
             Mockito.when(columnNameBuilder.build("fieldWithDefaultValues")).thenReturn(List.of("mock name"));
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(RecordWithPublicFieldColumnAnnotated.class.getRecordComponents()[1], RecordWithPublicFieldColumnAnnotated.class);
@@ -195,7 +195,7 @@ public class TakeAllFieldFieldResolverTests {
         @Test
         public void shouldReturnEmptyIfColumnIsAnnotatedWithIgnore() throws NoSuchFieldException {
             final var columnNameBuilder = Mockito.mock(ColumnNameBuilder.class);
-            final var fieldResolver = new TakeAllFieldFieldResolver();
+            final var fieldResolver = new ImplicitFieldResolver();
             fieldResolver.configure(columnNameBuilder);
 
             final var result = fieldResolver.fieldInfo(RecordWithPublicFieldNotAnnotated.class.getRecordComponents()[1], RecordWithPublicFieldNotAnnotated.class);

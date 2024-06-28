@@ -13,13 +13,12 @@ import java.util.Optional;
 
 import static java.util.Locale.ENGLISH;
 
-// TODO find a name
 /**
  * Register all class field as datatable column.
  * If the field is annotated with @Column annotation information are taken in account.
  * If the field is non annotated with @Column annotation it's optional, without description nor default value.
  */
-public class TakeAllFieldFieldResolver implements FieldResolver {
+public class ImplicitFieldResolver implements FieldResolver {
     private ColumnNameBuilder columnNameBuilder;
     private DeclarativeFieldResolver declarativeFieldResolver;
 
