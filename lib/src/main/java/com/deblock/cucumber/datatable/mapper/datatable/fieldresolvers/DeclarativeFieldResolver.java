@@ -1,6 +1,8 @@
-package com.deblock.cucumber.datatable.mapper.datatable;
+package com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers;
 
 import com.deblock.cucumber.datatable.annotations.Column;
+import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
+import com.deblock.cucumber.datatable.mapper.datatable.FieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 
 import java.lang.reflect.AnnotatedElement;

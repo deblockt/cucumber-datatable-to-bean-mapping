@@ -1,6 +1,8 @@
-package com.deblock.cucumber.datatable.mapper.datatable;
+package com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers;
 
 import com.deblock.cucumber.datatable.annotations.Ignore;
+import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
+import com.deblock.cucumber.datatable.mapper.datatable.FieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 
 import java.lang.reflect.Field;
@@ -13,7 +15,7 @@ import static java.util.Locale.ENGLISH;
 
 // TODO find a name
 /**
- * register all class field as datatable column.
+ * Register all class field as datatable column.
  * If the field is annotated with @Column annotation information are taken in account.
  * If the field is non annotated with @Column annotation it's optional, without description nor default value.
  */
@@ -24,7 +26,7 @@ public class TakeAllFieldFieldResolver implements FieldResolver {
     @Override
     public void configure(ColumnNameBuilder columnNameBuilder) {
         this.columnNameBuilder = columnNameBuilder;
-        this.declarativeFieldResolver = new DeclarativeFieldResolver(); // TODO find another way to do that
+        this.declarativeFieldResolver = new DeclarativeFieldResolver();
         this.declarativeFieldResolver.configure(columnNameBuilder);
     }
 
@@ -80,9 +82,6 @@ public class TakeAllFieldFieldResolver implements FieldResolver {
     }
 
     private static String capitalize(String name) {
-        if (name == null || name.isEmpty()) {
-            return name;
-        }
         return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
     }
 }

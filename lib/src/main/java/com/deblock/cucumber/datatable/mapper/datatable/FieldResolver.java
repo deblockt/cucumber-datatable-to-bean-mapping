@@ -7,10 +7,7 @@ import java.lang.reflect.RecordComponent;
 import java.util.Optional;
 
 public interface FieldResolver {
-
-    // TODO see how to avoid this dependency injection
     void configure(ColumnNameBuilder columnNameBuilder);
-
     Optional<FieldInfo> fieldInfo(Field field, Class<?> clazz);
     Optional<FieldInfo> fieldInfo(RecordComponent component, Class<?> clazz);
 

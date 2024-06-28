@@ -10,6 +10,7 @@ import com.deblock.cucumber.datatable.mapper.beans.Record;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecord;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecordNameMapping;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithUnsupportedConverter;
+import com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.typemetadata.exceptions.NoConverterFound;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumns() {
-        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(Record.class);
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(Record.class);
 
         final var result = beanMapper.headers();
 
@@ -46,7 +47,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldReadMetadataFromColumnAnnotatedColumnsOnNestedObjects() {
-        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecord.class);
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(RecordWithNestedRecord.class);
 
         final var result = beanMapper.headers();
 
@@ -67,7 +68,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldReplaceParentName() {
-        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecordNameMapping.class);
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(RecordWithNestedRecordNameMapping.class);
 
         final var result = beanMapper.headers();
 
@@ -86,7 +87,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldMapDataToBean() {
-        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(Record.class);
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(Record.class);
 
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -105,7 +106,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldMapDataToBeanWithNestedObjectWithAllRequiredObjectFilled() {
-        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecord.class);
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(RecordWithNestedRecord.class);
 
         final var result = (RecordWithNestedRecord) beanMapper.convert(Map.of(
                 "column", "value",
@@ -123,7 +124,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldSetNestedObjectToNullInCaseOfMissingFields() {
-        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithNestedRecord.class);
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(RecordWithNestedRecord.class);
 
         final var result = (RecordWithNestedRecord) beanMapper.convert(Map.of(
                 "column", "value",
@@ -140,7 +141,7 @@ public class RecordDatatableMapperTest {
 
     @Test
     public void shouldUseDefaultValueWhenColumnIsNotPresent() {
-        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(Record.class);
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(Record.class);
 
         final var result = (Record) beanMapper.convert(Map.of(
                 "stringProp", "string",
@@ -159,10 +160,16 @@ public class RecordDatatableMapperTest {
     public void shouldThrowErrorIfAnnotatedColumnFieldTypeNotSupported() {
         final var result = assertThrows(
                 NoConverterFound.class,
-                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), new MultiNameColumnNameBuilder()).build(RecordWithUnsupportedConverter.class)
+                () -> new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver()).build(RecordWithUnsupportedConverter.class)
         );
 
         assertThat(result).hasMessage("can not find any converter for class class com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper. You can define your own converter using @CustomDatatableFieldMapper");
+    }
+
+    public FieldResolver defaultFieldResolver() {
+        final var fieldResolver = new DeclarativeFieldResolver();
+        fieldResolver.configure(new MultiNameColumnNameBuilder());
+        return fieldResolver;
     }
 
     public static class MockMetadataFactory implements TypeMetadataFactory {

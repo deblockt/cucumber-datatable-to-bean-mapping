@@ -1,7 +1,7 @@
 package com.deblock.cucumber.datatable.backend.options;
 
-import com.deblock.cucumber.datatable.mapper.datatable.DeclarativeFieldResolver;
 import com.deblock.cucumber.datatable.mapper.datatable.FieldResolver;
+import com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder;
 

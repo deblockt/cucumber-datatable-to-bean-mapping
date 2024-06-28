@@ -1,2 +1,2 @@
-com.deblock.cucumber.datatable.mapper.datatable.DeclarativeFieldResolver
-com.deblock.cucumber.datatable.mapper.datatable.TakeAllFieldFieldResolver
+com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver
+com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.TakeAllFieldFieldResolver
