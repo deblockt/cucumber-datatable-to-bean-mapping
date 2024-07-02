@@ -1,7 +1,6 @@
 package com.deblock.cucumber.datatable.mapper.datatable;
 
 
-import com.deblock.cucumber.datatable.annotations.Column;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
@@ -20,9 +19,15 @@ public class SimpleColumnDatatableMapper implements DatatableMapper {
     private final TypeMetadata typeMetadata;
     private final DatatableHeader header;
 
-    public SimpleColumnDatatableMapper(Column column, ColumnName columnName, Type genericType, TypeMetadataFactory typeMetadataFactory) {
+    public SimpleColumnDatatableMapper(FieldResolver.FieldInfo column, ColumnName columnName, Type genericType, TypeMetadataFactory typeMetadataFactory) {
         this.typeMetadata = typeMetadataFactory.build(genericType);
-        this.header = new DatatableHeader(column, columnName, typeMetadata);
+        this.header = new DatatableHeader(
+                columnName,
+                column.description(),
+                column.optional(),
+                column.defaultValue(),
+                typeMetadata
+        );
     }
 
     @Override

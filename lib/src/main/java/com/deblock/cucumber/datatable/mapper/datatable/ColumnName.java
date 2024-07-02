@@ -31,11 +31,11 @@ public class ColumnName implements Iterable<String> {
         );
     }
 
-    public ColumnName addChild(List<String> childNames) {
+    public ColumnName addChild(ColumnName childNames) {
         if (names.isEmpty()) {
-            return new ColumnName(childNames);
+            return childNames;
         }
-        final List<String> replacedNames = childNames.stream()
+        final List<String> replacedNames = childNames.names.stream()
                 .flatMap(childName ->
                         this.names.stream()
                                 .map(parentName -> childName.replace("<parent_name>", parentName))
