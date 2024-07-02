@@ -72,11 +72,11 @@ And That's all. The mapping is performed automatically.
 
 ## Annotation usage
 
-The following parameters are available on the `@Column` annotation
+The following parameters are available on the `@Column` annotation. The `@Column` annotation can be omitted, see the [field resolution chapter](#field-resolution).
 
 | name         | type     | description                                                                                                  |
 |--------------|----------|--------------------------------------------------------------------------------------------------------------|
-| value        | string[] | the column name. The default value is the field name. You can specify multiple name for the same column      |
+| value        | string[] | the column name. You can specify multiple name for the same column. The default value is builded from the field name. see [name resolution chapter](#name-resolution)      |
 | description  | string   | the column description. The description is displayed when a datatable is malformed to show a helper message. |
 | mandatory    | boolean  | default true. Can be set to false to set the column to optional                                              |
 | defaultValue | string   | the default value used if the column is not specified                                                        |
@@ -185,7 +185,7 @@ Using these objects, the datatable will look like
 | 10 | Thomas     | Deblock   |
 ```
 
-Now If you another object `Conversation` with two customer, like that:
+Now If you have another object `Conversation` with two customer, like that:
 
 ```java
 
@@ -251,6 +251,44 @@ Using these objects, the following datatable will works:
 | 10           | Thomas               | Deblock             | 11           | Nicolas              | Deblock             |
 ```
 
+## Name resolution 
+
+When the column name is not explicitly specified using the `@Column` annotation, the name is derived from the field name. Three naming strategies are available:
+
+1. **Human Readable _(default)_**: Converts camel case field names to human-readable names by replacing camel case with spaces.
+   - Example: `myFieldName` becomes `my field name`.
+2. **Field Name**: Keeps the original field name as the column name.
+   - Example: `myFieldName` becomes `myFieldName`.
+3. **Multi Name**: Combines the previous two strategies, allowing either the original field name or the human-readable name.
+   - Example: `myFieldName` becomes `myFieldName` or `my field name`.
+
+See the [configuration](#configuration) section to learn how to select a naming strategy.
+
+
+## Field resolution
+
+By default, only fields with `@Column` annotation are used as Datatable column. 
+If you don't want to need to add `@Column` to all your fields, you can set the configuration `cucumber.datatable.mapper.field-resolver-class` with the value `com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver`. In this case all fields of your class will be mapped as optional column. 
+
+With this configuration this class will be valid: 
+``` java
+@DataTableWithHeader
+class Bean {
+    public String firstColumn;
+    public String secondColumn;
+}
+```
+If you want to ignore a field, you can use the `@Ignore` annotation. 
+``` java
+@DataTableWithHeader
+class Bean {
+    public String firstColumn;
+    public String secondColumn;
+    @Ignore
+    public ComplexType fieldToIgnore;
+}
+```
+
 ## Configuration
 
 You can configure some feature of this library to suit your coding preferences. 
@@ -263,6 +301,10 @@ The following properties are available on `cucumber.properties`, or using env va
 # com.deblock.cucumber.datatable.mapper.name.UseFieldNameColumnNameBuilder -- The field name is used without any transformation. Example "firstName"
 # com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder -- You can use human-readable name and fieldName.
 cucumber.datatable.mapper.name-builder-class=com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder
+# The property cucumber.datatable.mapper.field-resolver-class accepts these values: 
+# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver -- Only fields with @Column annotation will be mapped
+# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver -- All fields of your class will be mapped
+cucumber.datatable.mapper.field-resolver-class=com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver
 ```
 
 ## Usage on a fat/uber jar
