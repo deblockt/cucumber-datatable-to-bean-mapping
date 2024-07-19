@@ -14,4 +14,9 @@ public final class PropertiesConstants {
      * com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver -- Register all fields public or with a setter. @Ignore annotation can be used to ignore a field
      */
     public static final String FIELD_RESOLVER_CLASS_PROPERTY_NAME = "cucumber.datatable.mapper.field-resolver-class";
+    /**
+     * This property allow to specify how to get the now date time.
+     * com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService -- The now date is static and be the same during all the test execution
+     */
+    public static final String DATE_TIME_SERVICE_CLASS_PROPERTY_NAME = "cucumber.datatable.mapper.date-time-service-class";
 }

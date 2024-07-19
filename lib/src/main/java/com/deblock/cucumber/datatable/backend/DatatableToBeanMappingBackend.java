@@ -8,12 +8,12 @@ import com.deblock.cucumber.datatable.mapper.MapperFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.CompositeTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.collections.CollectionTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.custom.CustomTypeMetadataFactory;
-import com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticGetTimeService;
 import com.deblock.cucumber.datatable.mapper.typemetadata.date.TemporalTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.enumeration.EnumTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.map.MapTypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.typemetadata.primitive.PrimitiveTypeMetadataFactoryImpl;
 import com.deblock.cucumber.datatable.runtime.ColumnNameBuilderServiceLoader;
+import com.deblock.cucumber.datatable.runtime.DateTimeServiceLoader;
 import com.deblock.cucumber.datatable.runtime.FieldResolverServiceLoader;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
@@ -32,11 +32,13 @@ import static io.cucumber.core.resource.ClasspathSupport.CLASSPATH_SCHEME;
 public class DatatableToBeanMappingBackend implements Backend {
     private final ClasspathScanner classFinder;
     private final FieldResolverServiceLoader fieldResolveServiceLoader;
+    private final DateTimeServiceLoader dateTimeServiceLoader;
 
     public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, FullOptions options) {
         this.classFinder = new ClasspathScanner(classLoaderSupplier);
         final var columnNameBuilderServiceLoader = new ColumnNameBuilderServiceLoader(options, classLoaderSupplier);
         this.fieldResolveServiceLoader = new FieldResolverServiceLoader(options, classLoaderSupplier, columnNameBuilderServiceLoader);
+        this.dateTimeServiceLoader = new DateTimeServiceLoader(options, classLoaderSupplier);
     }
 
     @Override
@@ -45,12 +47,12 @@ public class DatatableToBeanMappingBackend implements Backend {
         final var typeMetadataFactory = new CompositeTypeMetadataFactory(
             customTypeMetadataFactory,
             new PrimitiveTypeMetadataFactoryImpl(),
-            new TemporalTypeMetadataFactory(new StaticGetTimeService()),
+            new TemporalTypeMetadataFactory(dateTimeServiceLoader.loadService()),
             new EnumTypeMetadataFactory(),
             new MapTypeMetadataFactory()
         );
         typeMetadataFactory.add(new CollectionTypeMetadataFactory(typeMetadataFactory));
-        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, fieldResolveServiceLoader.loadFieldResolverBuilder());
+        final var mapperFactory = new GenericMapperFactory(typeMetadataFactory, fieldResolveServiceLoader.loadService());
 
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))
