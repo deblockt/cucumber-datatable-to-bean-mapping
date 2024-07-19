@@ -9,6 +9,8 @@ Two main features are provided:
 - validate the datatable (validate that all headers are defined on bean)
 - perform the mapping
 
+
+
 ## Installation
 
 It's available on maven central repository.
@@ -375,3 +377,11 @@ You can use this plugin configuration:
     </executions>
 </plugin>
 ```
+
+
+## IDE plugins
+
+### InteliJ
+
+An InteliJ plugin is available for this library.
+You can install It from the [Jetbrains Marketplace: Cucumber DataTable Mapping](https://plugins.jetbrains.com/plugin/24873-cucumber-datatable-mapping) 
