@@ -6,9 +6,9 @@ Feature: Mapping
       | string | integer | integers      |
       | s      | 1       | 1, 3, 4, 5, 6 |
     And a step with a list of record
-      | string | integer | integers | customDTO |
-      | s      | 10      |          | false     |
-      | a      | 11      | 3, 1039  | test      |
+      | string | integer | integers | customDTO | other custom dto |
+      | s      | 10      |          | false     | test1            |
+      | a      | 11      | 3, 1039  | test      | test2            |
 
 
   Scenario: Failed due to typo on column

@@ -9,7 +9,6 @@ public record CustomBean(String value) {
         return new CustomBean(value);
     }
 
-    @CustomDatatableFieldMapper(sample = "aString", typeDescription = "CustomBean")
     public static CustomBean mapFromNonString(Integer value) {
         return null;
     }
@@ -19,12 +18,10 @@ public record CustomBean(String value) {
         return new CustomBean(value);
     }
 
-    @CustomDatatableFieldMapper(sample = "aString", typeDescription = "CustomBean")
     public static CustomBean mapperWithoutParameter() {
         return null;
     }
 
-    @CustomDatatableFieldMapper(sample = "aString", typeDescription = "CustomBean")
     public static CustomBean mapperWithTwoParametersParameter(String value1, String value2) {
         return null;
     }
