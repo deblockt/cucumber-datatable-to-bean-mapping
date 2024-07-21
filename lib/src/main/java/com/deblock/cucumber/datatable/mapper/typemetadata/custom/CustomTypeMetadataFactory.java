@@ -1,9 +1,9 @@
 package com.deblock.cucumber.datatable.mapper.typemetadata.custom;
 
 import com.deblock.cucumber.datatable.annotations.CustomDatatableFieldMapper;
-import com.deblock.cucumber.datatable.backend.DatatableToBeanMappingBackend;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
+import io.cucumber.core.backend.Lookup;
 import io.cucumber.core.logging.Logger;
 import io.cucumber.core.logging.LoggerFactory;
 import io.cucumber.core.resource.ClasspathScanner;
@@ -26,11 +26,11 @@ import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
 
 public class CustomTypeMetadataFactory implements TypeMetadataFactory {
-    private static final Logger log = LoggerFactory.getLogger(DatatableToBeanMappingBackend.class);
+    private static final Logger log = LoggerFactory.getLogger(CustomTypeMetadataFactory.class);
 
     private final Map<Class<?>, TypeMetadata> customTypes = new HashMap<>();
 
-    public CustomTypeMetadataFactory(ClasspathScanner classFinder, List<URI> gluePaths) {
+    public CustomTypeMetadataFactory(ClasspathScanner classFinder, List<URI> gluePaths, Lookup lookup) {
         gluePaths.stream()
                 .filter(gluePath -> CLASSPATH_SCHEME.equals(gluePath.getScheme()))
                 .map(ClasspathSupport::packageName)
@@ -39,7 +39,7 @@ public class CustomTypeMetadataFactory implements TypeMetadataFactory {
                 .distinct()
                 .forEach(aGlueClass -> scan(aGlueClass, (method, annotation) -> {
                     if (CustomDatatableFieldMapper.class.equals(annotation.annotationType())) {
-                        this.addCustomType(method.getReturnType(), new CustomJavaBeanTypeMetadata(method, (CustomDatatableFieldMapper) annotation));
+                        this.addCustomType(method.getReturnType(), new CustomJavaBeanTypeMetadata(method, (CustomDatatableFieldMapper) annotation, lookup));
                     }
                 }));
     }
@@ -63,20 +63,20 @@ public class CustomTypeMetadataFactory implements TypeMetadataFactory {
             return;
         }
         for (Method method : safelyGetMethods(aClass)) {
-            scan(consumer, aClass, method);
+            scan(consumer, method);
         }
     }
 
-    private static void scan(BiConsumer<Method, Annotation> consumer, Class<?> aClass, Method method) {
+    private static void scan(BiConsumer<Method, Annotation> consumer, Method method) {
         // prevent unnecessary checking of Object methods
         if (Object.class.equals(method.getDeclaringClass())) {
             return;
         }
-        scan(consumer, aClass, method, method.getAnnotations());
+        scan(consumer, method, method.getAnnotations());
     }
 
     private static void scan(
-            BiConsumer<Method, Annotation> consumer, Class<?> aClass, Method method, Annotation[] methodAnnotations
+            BiConsumer<Method, Annotation> consumer, Method method, Annotation[] methodAnnotations
     ) {
         for (Annotation annotation : methodAnnotations) {
             consumer.accept(method, annotation);

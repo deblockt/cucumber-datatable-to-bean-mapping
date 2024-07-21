@@ -20,6 +20,6 @@ public class DatatableToBeanMappingBackendProviderService implements BackendProv
                 new PropertiesOptions(CucumberProperties.fromPropertiesFile()),
                 new DefaultOptions()
         );
-        return new DatatableToBeanMappingBackend(classLoader, options);
+        return new DatatableToBeanMappingBackend(classLoader, options, lookup);
     }
 }

@@ -13,8 +13,9 @@ public record CustomBean(String value) {
         return null;
     }
 
+    @CustomDatatableFieldMapper(sample = "aString", typeDescription = "CustomBean")
     public CustomBean nonStaticMapperForTest(String value) {
-        return null;
+        return new CustomBean(value);
     }
 
     public static CustomBean mapperWithoutParameter() {

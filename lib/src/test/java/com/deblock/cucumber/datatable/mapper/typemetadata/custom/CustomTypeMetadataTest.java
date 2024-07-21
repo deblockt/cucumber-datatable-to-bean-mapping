@@ -4,18 +4,21 @@ import com.deblock.cucumber.datatable.annotations.CustomDatatableFieldMapper;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.beans.custom.CustomBean;
 import com.deblock.cucumber.datatable.mapper.beans.custom.CustomBean2;
+import io.cucumber.core.backend.Lookup;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class CustomTypeMetadataTest {
+class CustomTypeMetadataTest {
+    Lookup lookup = Mockito.mock(Lookup.class);
 
     @Test
-    public void shouldReturnAnnotationTypeDescriptionAsDescription() throws NoSuchMethodException {
+    void shouldReturnAnnotationTypeDescriptionAsDescription() throws NoSuchMethodException {
         final var method = CustomBean.class.getMethod("mapFromString", String.class);
-        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class));
+        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class), lookup);
 
         final var result = typeMetadata.typeDescription();
 
@@ -23,9 +26,9 @@ public class CustomTypeMetadataTest {
     }
 
     @Test
-    public void shouldReturnAnnotationSampleAsSample() throws NoSuchMethodException {
+    void shouldReturnAnnotationSampleAsSample() throws NoSuchMethodException {
         final var method = CustomBean.class.getMethod("mapFromString", String.class);
-        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class));
+        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class), lookup);
 
         final var result = typeMetadata.sample();
 
@@ -33,9 +36,9 @@ public class CustomTypeMetadataTest {
     }
 
     @Test
-    public void shouldUseTheMethodToMapString() throws NoSuchMethodException {
+    void shouldUseTheMethodToMapString() throws NoSuchMethodException {
         final var method = CustomBean.class.getMethod("mapFromString", String.class);
-        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class));
+        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class), lookup);
 
         final var result = typeMetadata.convert("aValue");
 
@@ -44,54 +47,57 @@ public class CustomTypeMetadataTest {
     }
 
     @Test
-    public void shouldThrowConversionExceptionIfMapperFail() throws NoSuchMethodException {
+    void shouldUseNonStaticMethod() throws NoSuchMethodException {
+        Mockito.when(lookup.getInstance(CustomBean.class)).thenReturn(new CustomBean(""));
+        final var method = CustomBean.class.getMethod("nonStaticMapperForTest", String.class);
+        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class), lookup);
+
+        final var result = typeMetadata.convert("aValue");
+
+        assertThat(result).isInstanceOf(CustomBean.class);
+        assertThat(((CustomBean)result).value()).isEqualTo("aValue");
+    }
+
+    @Test
+    void shouldThrowConversionExceptionIfMapperFail() throws NoSuchMethodException {
         final var method = CustomBean2.class.getMethod("mapperThrowingException", String.class);
-        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class));
+        final var typeMetadata = new CustomJavaBeanTypeMetadata(method, method.getAnnotation(CustomDatatableFieldMapper.class), lookup);
 
         final var exception = Assertions.assertThrows(TypeMetadata.ConversionError.class, () -> typeMetadata.convert("aValue"));
 
-        assertThat(exception.getMessage()).isEqualTo("error aValue is not supported");
+        assertThat(exception.getMessage()).isEqualTo("method CustomBean2.mapperThrowingException has throw the error: error aValue is not supported");
         assertThat(exception.getCause()).isNotNull();
     }
 
     @Test
-    public void shouldFailIfAnnotationIsNull() throws NoSuchMethodException {
+    void shouldFailIfAnnotationIsNull() throws NoSuchMethodException {
         final var method = CustomBean.class.getMethod("mapFromString", String.class);
-        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null));
+        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null, lookup));
 
         assertThat(exception.getMessage()).isEqualTo("The annotation should not be null");
     }
 
-
     @Test
-    public void shouldFailIfMethodIsNotStatic() throws NoSuchMethodException {
-        final var method = CustomBean.class.getMethod("nonStaticMapperForTest", String.class);
-        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null));
-
-        assertThat(exception.getMessage()).isEqualTo("The method CustomBean.nonStaticMapperForTest should be static to be used with annotation CustomDatatableFieldMapper");
-    }
-
-    @Test
-    public void shouldFailIfMethodHasNoParameter() throws NoSuchMethodException {
+    void shouldFailIfMethodHasNoParameter() throws NoSuchMethodException {
         final var method = CustomBean.class.getMethod("mapperWithoutParameter");
-        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null));
+        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null, lookup));
 
         assertThat(exception.getMessage()).isEqualTo("The method CustomBean.mapperWithoutParameter should have one String parameter to be used with annotation CustomDatatableFieldMapper");
 
     }
 
     @Test
-    public void shouldFailIfMethodHasMoreThanOneParameter() throws NoSuchMethodException {
+    void shouldFailIfMethodHasMoreThanOneParameter() throws NoSuchMethodException {
         final var method = CustomBean.class.getMethod("mapperWithTwoParametersParameter", String.class, String.class);
-        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null));
+        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null, lookup));
 
         assertThat(exception.getMessage()).isEqualTo("The method CustomBean.mapperWithTwoParametersParameter should have one String parameter to be used with annotation CustomDatatableFieldMapper");
     }
 
     @Test
-    public void shouldFailIfMethodHasANonStringParameter() throws NoSuchMethodException {
+    void shouldFailIfMethodHasANonStringParameter() throws NoSuchMethodException {
         final var method = CustomBean.class.getMethod("mapFromNonString", Integer.class);
-        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null));
+        final var exception = Assertions.assertThrows(IllegalArgumentException.class, () -> new CustomJavaBeanTypeMetadata(method, null, lookup));
 
         assertThat(exception.getMessage()).isEqualTo("The method CustomBean.mapFromNonString should have one String parameter to be used with annotation CustomDatatableFieldMapper");
     }

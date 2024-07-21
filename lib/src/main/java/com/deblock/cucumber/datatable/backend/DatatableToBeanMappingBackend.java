@@ -18,6 +18,7 @@ import com.deblock.cucumber.datatable.runtime.FieldResolverServiceLoader;
 import com.deblock.cucumber.datatable.validator.DataTableValidator;
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.Glue;
+import io.cucumber.core.backend.Lookup;
 import io.cucumber.core.backend.Snippet;
 import io.cucumber.core.resource.ClasspathScanner;
 import io.cucumber.core.resource.ClasspathSupport;
@@ -33,17 +34,19 @@ public class DatatableToBeanMappingBackend implements Backend {
     private final ClasspathScanner classFinder;
     private final FieldResolverServiceLoader fieldResolveServiceLoader;
     private final DateTimeServiceLoader dateTimeServiceLoader;
+    private final Lookup lookup;
 
-    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, FullOptions options) {
+    public DatatableToBeanMappingBackend(Supplier<ClassLoader> classLoaderSupplier, FullOptions options, Lookup lookup) {
         this.classFinder = new ClasspathScanner(classLoaderSupplier);
         final var columnNameBuilderServiceLoader = new ColumnNameBuilderServiceLoader(options, classLoaderSupplier);
         this.fieldResolveServiceLoader = new FieldResolverServiceLoader(options, classLoaderSupplier, columnNameBuilderServiceLoader);
         this.dateTimeServiceLoader = new DateTimeServiceLoader(options, classLoaderSupplier);
+        this.lookup = lookup;
     }
 
     @Override
     public void loadGlue(Glue glue, List<URI> gluePaths) {
-        final var customTypeMetadataFactory = new CustomTypeMetadataFactory(this.classFinder, gluePaths);
+        final var customTypeMetadataFactory = new CustomTypeMetadataFactory(this.classFinder, gluePaths, lookup);
         final var typeMetadataFactory = new CompositeTypeMetadataFactory(
             customTypeMetadataFactory,
             new PrimitiveTypeMetadataFactoryImpl(),

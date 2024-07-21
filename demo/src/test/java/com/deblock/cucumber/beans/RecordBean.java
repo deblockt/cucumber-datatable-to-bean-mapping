@@ -16,6 +16,8 @@ public record RecordBean(
     @Column(value = "enumValue", defaultValue = "VALUE2")
     EnumValue enumValue,
     @Column(value = "customDTO", mandatory = false)
-    CustomDTO customDTO
+    CustomDTO customDTO,
+    @Column(mandatory = false)
+    OtherCustomDTO otherCustomDTO
 ) {
 }

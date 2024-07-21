@@ -11,6 +11,7 @@ java {
 dependencies {
     testImplementation project(':lib')
     testImplementation 'io.cucumber:cucumber-java:7.8.1'
+    testImplementation 'io.cucumber:cucumber-picocontainer:7.8.1'
 }
 
 configurations {
