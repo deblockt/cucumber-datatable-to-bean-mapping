@@ -38,7 +38,7 @@ public class CustomJavaBeanTypeMetadata implements TypeMetadata {
         } catch (IllegalAccessException e) {
             throw new ConversionError("Unable to convert \"" + value + "\" using " + this.getMethodName(this.method) + " to return " + this.method.getReturnType().getSimpleName(), e);
         } catch (InvocationTargetException e) {
-            throw new ConversionError("method " + this.getMethodName(this.method) + " has throw the error: " + e.getTargetException().getMessage(), e);
+            throw new ConversionError(e.getTargetException().getMessage(), e.getTargetException());
         }
     }
 

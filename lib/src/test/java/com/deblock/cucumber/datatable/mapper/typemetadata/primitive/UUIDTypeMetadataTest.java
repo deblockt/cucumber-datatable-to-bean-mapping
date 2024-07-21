@@ -25,7 +25,7 @@ class UUIDTypeMetadataTest {
 
         final var exception = assertThrows(TypeMetadata.ConversionError.class, () -> typeMetadata.convert("aaaa"));
 
-        assertThat(exception).hasMessage("\"aaaa\" is an invalid format for uuid");
+        assertThat(exception).hasMessage("invalid format for uuid");
     }
 
 }

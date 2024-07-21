@@ -34,6 +34,8 @@ class MapTypeMetadataTest {
                 """
         ));
 
-        assertThat(exception).hasMessage("Unable to convert json to Map");
+        assertThat(exception).hasMessage("Unexpected character ('}' (code 125)): expected a valid value (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n" +
+                " at [Source: (String)\"{\"foo\": }\n" +
+                "\"; line: 1, column: 10]");
     }
 }

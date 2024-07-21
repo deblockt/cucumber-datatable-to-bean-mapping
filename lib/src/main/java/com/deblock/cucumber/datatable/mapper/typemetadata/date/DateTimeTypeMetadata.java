@@ -54,7 +54,7 @@ public class DateTimeTypeMetadata implements TypeMetadata {
                 }
             }
         }
-        throw new ConversionError("the value \"" + value + "\" doesn't match date time format. Use ISO format or \"now + x day/week/year/milli/minute/second/hour/month\"");
+        throw new ConversionError("use ISO format or \"now + x day/week/year/milli/minute/second/hour/month\"");
     }
 
     private static ChronoUnit toChronosUnit(String unit) {

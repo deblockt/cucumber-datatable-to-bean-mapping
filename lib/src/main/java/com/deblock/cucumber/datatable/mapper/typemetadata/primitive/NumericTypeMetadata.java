@@ -30,7 +30,7 @@ public class NumericTypeMetadata implements TypeMetadata {
         try {
             return this.mapper.apply(value.replace(',', '.'));
         } catch (NumberFormatException ex) {
-            throw new ConversionError("\"%s\" is an invalid format for %s".formatted(value, this.typeDescription()));
+            throw new ConversionError("invalid format for %s".formatted(this.typeDescription()));
         }
     }
 }

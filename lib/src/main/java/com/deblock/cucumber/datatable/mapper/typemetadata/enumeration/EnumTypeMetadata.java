@@ -52,7 +52,7 @@ public class EnumTypeMetadata implements TypeMetadata {
             return valueOf.invoke(null, value);
         } catch (InvocationTargetException targetException) {
             if (targetException.getTargetException() instanceof IllegalArgumentException ex) {
-                throw new ConversionError(ex.getMessage(), ex);
+                throw new ConversionError(ex.getMessage());
             }
             throw new ConversionError("%s can not be converted to enum %s".formatted(value, this.clazz.getName()), targetException);
         } catch (IllegalAccessException e) {

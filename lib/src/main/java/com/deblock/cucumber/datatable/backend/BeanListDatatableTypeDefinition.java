@@ -50,7 +50,7 @@ public class BeanListDatatableTypeDefinition implements DataTableTypeDefinition 
 
     @Override
     public boolean isDefinedAt(StackTraceElement stackTraceElement) {
-        return true;
+        return false;
     }
 
     @Override

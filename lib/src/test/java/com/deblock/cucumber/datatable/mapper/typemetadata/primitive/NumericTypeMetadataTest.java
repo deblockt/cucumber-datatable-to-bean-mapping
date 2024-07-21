@@ -43,6 +43,6 @@ public class NumericTypeMetadataTest {
 
         final var exception = assertThrows(TypeMetadata.ConversionError.class, () -> typeMetadata.convert("foo"));
 
-        assertThat(exception).hasMessage("\"foo\" is an invalid format for int");
+        assertThat(exception).hasMessage("invalid format for int");
     }
 }

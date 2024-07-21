@@ -35,7 +35,7 @@ public class MapTypeMetadata implements TypeMetadata {
                 }
             });
         } catch (JsonProcessingException e) {
-            throw new ConversionError("Unable to convert json to Map", e);
+            throw new ConversionError(e.getMessage(), e);
         }
     }
 }

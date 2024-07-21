@@ -20,7 +20,7 @@ public class UUIDTypeMetadata implements TypeMetadata {
         try {
             return UUID.fromString(value);
         } catch (IllegalArgumentException e) {
-            throw new TypeMetadata.ConversionError("\"%s\" is an invalid format for uuid".formatted(value));
+            throw new TypeMetadata.ConversionError("invalid format for uuid");
         }
     }
 }
