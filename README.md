@@ -111,22 +111,13 @@ The following types can be auto mapped:
 
 ### Custom type support
 
-If you want to use a custom type on datatable, you can write custom mapper. It can be useful when you want to convert id
-to object.
+If you want to use a custom type on datatable, you can write custom mapper. 
+It can be useful when you want to convert id to object.
 
 For example, If you have an object `Customer`:
 
 ```java
-
-@DataTableWithHeader
-record Customer(
-        @Column("code")
-        String code,
-        @Column("first name")
-        String firstName,
-        @Column("last name")
-        String lastName
-) {
+record Customer(String code, String firstName, String lastName) {
 }
 ```
 
@@ -155,10 +146,9 @@ You need to write a function to map a string to a Customer.
 The function should be provided on your steps package.
 
 ```java
-
 @CustomDatatableFieldMapper(sample = "cucumberCode", typeDescription = "Customer")
-public static Customer customerMapper(String customerCode) {
-    return TestContext.getCustomer(customerCode);
+public Customer customerMapper(String customerCode) {
+    // Get the customer on your test context (using static context or injected with spring or picocontainer
 }
 ```
 
