@@ -14,7 +14,6 @@ public interface TypeMetadata {
     class ConversionError extends RuntimeException {
         public ConversionError(String message, Throwable cause) {
             super(message, cause);
-            this.setStackTrace(cause.getStackTrace());
         }
 
         public ConversionError(String message) {

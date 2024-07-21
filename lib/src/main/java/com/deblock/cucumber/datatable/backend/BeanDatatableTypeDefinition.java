@@ -56,11 +56,11 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
                    try {
                         this.validator.validate(map.keySet());
                         return this.datatableMapper.convert(map);
-                   } catch (DataTableDoesNotMatch | CellMappingException dataTableDoesNotMatch) {
+                   } catch (DataTableDoesNotMatch | CellMappingException exception) {
                         throw new CucumberInvocationTargetException(
                                 this,
                                 new InvocationTargetException(
-                                    new DatatableMappingException(this.glueClass, dataTableDoesNotMatch)
+                                    new DatatableMappingException(this.glueClass, exception)
                                 )
                         );
                    }
