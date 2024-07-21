@@ -2,10 +2,12 @@ package com.deblock.cucumber.datatable.backend.options;
 
 import com.deblock.cucumber.datatable.mapper.datatable.FieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
+import com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService;
 import io.cucumber.core.exception.CucumberException;
 
 import java.util.Map;
 
+import static com.deblock.cucumber.datatable.backend.options.PropertiesConstants.DATE_TIME_SERVICE_CLASS_PROPERTY_NAME;
 import static com.deblock.cucumber.datatable.backend.options.PropertiesConstants.FIELD_RESOLVER_CLASS_PROPERTY_NAME;
 import static com.deblock.cucumber.datatable.backend.options.PropertiesConstants.NAME_BUILDER_CLASS_PROPERTY_NAME;
 
@@ -26,6 +28,11 @@ public class PropertiesOptions implements FullOptions {
         return getClassParameter(FIELD_RESOLVER_CLASS_PROPERTY_NAME, FieldResolver.class);
     }
 
+    @Override
+    public Class<? extends DateTimeService> getDateTimeServiceClass() {
+        return getClassParameter(DATE_TIME_SERVICE_CLASS_PROPERTY_NAME, DateTimeService.class);
+    }
+
     private <T> Class<T> getClassParameter(String property, Class<T> loaderClazz) {
         final String className = properties.get(property);
         if (className == null) {
@@ -34,7 +41,7 @@ public class PropertiesOptions implements FullOptions {
         try {
             Class<?> clazz = Class.forName(className);
             if (!loaderClazz.isAssignableFrom(clazz)) {
-                throw new CucumberException("Name builder class '%s' was not a subclass of '%s'.".formatted(clazz, loaderClazz));
+                throw new CucumberException("The class '%s' was not a subclass of '%s'.".formatted(clazz, loaderClazz));
             }
             return (Class<T>) clazz;
         } catch (ClassNotFoundException e) {

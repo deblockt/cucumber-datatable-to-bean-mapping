@@ -101,6 +101,14 @@ The following types can be auto mapped:
 
   `now` will return the same date at each step of the test.
 
+> :information_source: You can customize the way to resolve `now`. 
+> 
+> You can implement the interface `com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` and implement your custom now function.
+> 
+> To use you custom class, you should set the property `cucumber.datatable.mapper.date-time-service-class` with your class reference.
+> 
+> You should create a file `META-INF/services/com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` and put your class reference inside.
+
 ### Custom type support
 
 If you want to use a custom type on datatable, you can write custom mapper. It can be useful when you want to convert id
@@ -307,6 +315,9 @@ cucumber.datatable.mapper.name-builder-class=com.deblock.cucumber.datatable.mapp
 # com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver -- Only fields with @Column annotation will be mapped
 # com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver -- All fields of your class will be mapped
 cucumber.datatable.mapper.field-resolver-class=com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver
+# This property allow to specify how to get the now date time. You can implement your own class if you want customize it
+# com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService -- The now date is static and be the same during all the test execution
+cucumber.datatable.mapper.date-time-service-class=com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService
 ```
 
 ## Usage on a fat/uber jar

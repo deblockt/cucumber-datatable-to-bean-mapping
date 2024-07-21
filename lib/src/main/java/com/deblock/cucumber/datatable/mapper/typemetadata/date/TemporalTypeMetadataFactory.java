@@ -12,7 +12,7 @@ import java.util.Map;
 public class TemporalTypeMetadataFactory implements TypeMetadataFactory {
     private final Map<Class<?>, TypeMetadata> temporalTypeMetadataByTypes;
 
-    public TemporalTypeMetadataFactory(GetDateService getDateService) {
+    public TemporalTypeMetadataFactory(DateTimeService getDateService) {
         this.temporalTypeMetadataByTypes = Map.of(
                 OffsetDateTime.class, new DateTimeTypeMetadata(getDateService::now, OffsetDateTime::parse),
                 LocalDateTime.class, new DateTimeTypeMetadata(() -> getDateService.now().toLocalDateTime(), LocalDateTime::parse),

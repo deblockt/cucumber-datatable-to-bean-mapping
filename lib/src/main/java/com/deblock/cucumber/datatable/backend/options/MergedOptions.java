@@ -3,6 +3,7 @@ package com.deblock.cucumber.datatable.backend.options;
 import com.deblock.cucumber.datatable.mapper.Options;
 import com.deblock.cucumber.datatable.mapper.datatable.FieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
+import com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +25,11 @@ public class MergedOptions implements FullOptions {
     @Override
     public Class<? extends FieldResolver> getFieldResolverClass() {
         return getOption(Options::getFieldResolverClass);
+    }
+
+    @Override
+    public Class<? extends DateTimeService> getDateTimeServiceClass() {
+        return getOption(Options::getDateTimeServiceClass);
     }
 
     private <T> T getOption(Function<FullOptions, T> supplier) {
