@@ -9,6 +9,11 @@ import io.cucumber.java.en.Given;
 import java.util.List;
 
 public class TestStep {
+    private final ApplicationContext applicationContext;
+
+    public TestStep(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @CustomDatatableFieldMapper(sample = "valueString", typeDescription = "CustomDTO")
     public static CustomDTO customDTOMapper(String value) {

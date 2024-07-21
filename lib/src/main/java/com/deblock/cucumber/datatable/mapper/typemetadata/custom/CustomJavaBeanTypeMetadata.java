@@ -2,17 +2,22 @@ package com.deblock.cucumber.datatable.mapper.typemetadata.custom;
 
 import com.deblock.cucumber.datatable.annotations.CustomDatatableFieldMapper;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
+import io.cucumber.core.backend.Lookup;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 public class CustomJavaBeanTypeMetadata implements TypeMetadata {
-    private final Method mapper;
+    private final Mapper mapper;
     private final CustomDatatableFieldMapper annotation;
+    private final Lookup lookup;
+    private final Method method;
 
-    public CustomJavaBeanTypeMetadata(Method mapper, CustomDatatableFieldMapper annotation) {
-        this.mapper = validateMapper(mapper);
+    public CustomJavaBeanTypeMetadata(Method mapperMethod, CustomDatatableFieldMapper annotation, Lookup lookup) {
+        this.lookup = lookup;
+        this.mapper = validateMapper(mapperMethod);
+        this.method = mapperMethod;
         this.annotation = validateAnnotation(annotation);
     }
 
@@ -29,29 +34,27 @@ public class CustomJavaBeanTypeMetadata implements TypeMetadata {
     @Override
     public Object convert(String value) throws ConversionError {
         try {
-            return this.mapper.invoke(null, value);
+            return this.mapper.map(value);
         } catch (IllegalAccessException e) {
-            throw new ConversionError("Unable to convert \"" + value + "\" using " + this.getMethodName(this.mapper) + " to return " + this.mapper.getReturnType().getSimpleName(), e);
+            throw new ConversionError("Unable to convert \"" + value + "\" using " + this.getMethodName(this.method) + " to return " + this.method.getReturnType().getSimpleName(), e);
         } catch (InvocationTargetException e) {
-            throw new ConversionError(e.getTargetException().getMessage(), e);
+            throw new ConversionError("method " + this.getMethodName(this.method) + " has throw the error: " + e.getTargetException().getMessage(), e);
         }
     }
 
-    private Method validateMapper(Method mapper) {
-        if (!Modifier.isStatic(mapper.getModifiers())) {
+    private Mapper validateMapper(Method method) {
+        if (method.getParameterCount() != 1 || !String.class.equals(method.getParameters()[0].getType())) {
             throw new IllegalArgumentException(
-                    "The method " + this.getMethodName(mapper) +
-                            " should be static to be used with annotation CustomDatatableFieldMapper"
-            );
-        }
-        if (mapper.getParameterCount() != 1 || !String.class.equals(mapper.getParameters()[0].getType())) {
-            throw new IllegalArgumentException(
-                    "The method " + this.getMethodName(mapper) +
+                    "The method " + this.getMethodName(method) +
                             " should have one String parameter to be used with annotation CustomDatatableFieldMapper"
             );
         }
 
-        return mapper;
+        if (Modifier.isStatic(method.getModifiers())) {
+            return value -> method.invoke(null, value);
+        } else {
+            return value -> method.invoke(lookup.getInstance(method.getDeclaringClass()), value);
+        }
     }
 
     private String getMethodName(Method mapper) {
@@ -63,5 +66,9 @@ public class CustomJavaBeanTypeMetadata implements TypeMetadata {
             throw new IllegalArgumentException("The annotation should not be null");
         }
         return annotation;
+    }
+
+    interface Mapper {
+        Object map(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
     }
 }
