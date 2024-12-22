@@ -12,11 +12,7 @@ import io.cucumber.datatable.CucumberDataTableException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -108,6 +104,47 @@ public class BeanDatatableTypeDefinitionTest {
 
         verify(validator).validate(Set.of("header", "header2"));
         verify(beanMapper).convert(Map.of("header", "value", "header2", "value2"));
+    }
+
+    @Test
+    public void shouldAllowEmptyDatatableWithoutDataRow() {
+        final var validator = Mockito.mock(DataTableValidator.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
+        when(beanMapper.headers()).thenReturn(List.of(
+                new DatatableHeader(new ColumnName("header"), null, true, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, true, null, null)
+        ));
+        final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
+
+        typeDefinition.dataTableType().transform(
+                List.of(
+                        row("")
+                )
+        );
+
+        verify(validator).validate(Set.of());
+        verify(beanMapper).convert(Map.of());
+    }
+
+    @Test
+    public void shouldAllowEmptyDatatableWithEmptyDataRow() {
+        final var validator = Mockito.mock(DataTableValidator.class);
+        final var beanMapper = Mockito.mock(BeanDatatableMapper.class);
+        when(beanMapper.headers()).thenReturn(List.of(
+                new DatatableHeader(new ColumnName("header"), null, true, null, null),
+                new DatatableHeader(new ColumnName("header2"), null, true, null, null)
+        ));
+        final var typeDefinition = new BeanDatatableTypeDefinition(Bean.class, validator, beanMapper);
+
+        typeDefinition.dataTableType().transform(
+                List.of(
+                        row(""),
+                        row("")
+                )
+        );
+
+        verify(validator).validate(Set.of());
+        verify(beanMapper).convert(Map.of());
     }
 
     @Test
