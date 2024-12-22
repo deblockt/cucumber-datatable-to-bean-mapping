@@ -14,6 +14,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 
+/**
+ * Convert the datatable to a list of beans.
+ * The beans should be annotated with @DataTableWithHeader.
+ */
 public class BeanListDatatableTypeDefinition implements DataTableTypeDefinition {
 
     private final Class<?> glueClass;

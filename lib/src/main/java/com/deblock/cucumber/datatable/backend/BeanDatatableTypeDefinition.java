@@ -17,7 +17,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
+/**
+ * Convert a datatable to a bean.
+ * The bean is not a List and should be annotated with @DataTableWithHeader.
+ * <p>
+ * Datatable can have two modes:
+ * - One row mode: the first row is the header and the second row is the values
+ * - Two columns mode: the first column is the header and the second column is the values
+ */
+public class BeanDatatableTypeDefinition implements DataTableTypeDefinition {
     private final Class<?> glueClass;
     private final DataTableValidator validator;
     private final DatatableMapper datatableMapper;
@@ -40,11 +48,16 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
 
                     if (
                             firstRowNumberOfHeader > firstColumnNumberOfHeader
-                            || (firstRowNumberOfHeader == firstColumnNumberOfHeader && !isTwoColumnTable)
+                                    || (firstRowNumberOfHeader == firstColumnNumberOfHeader && !isTwoColumnTable)
                     ) {
-                        // table using only one row
-                        for (var i = 0; i < table.width(); ++i) {
-                            map.put(table.row(0).get(i), table.row(1).get(i));
+                        if (table.height() > 1) {
+                            // table using only one row
+                            for (var i = 0; i < table.width(); ++i) {
+                                String header = table.row(0).get(i);
+                                if (!header.isEmpty()) {
+                                    map.put(table.row(0).get(i), table.row(1).get(i));
+                                }
+                            }
                         }
                     } else {
                         // table using 2 columns mode
@@ -53,17 +66,17 @@ public class BeanDatatableTypeDefinition implements DataTableTypeDefinition  {
                         }
                     }
                     map.values().removeAll(Collections.singleton(null));
-                   try {
+                    try {
                         this.validator.validate(map.keySet());
                         return this.datatableMapper.convert(map);
-                   } catch (DataTableDoesNotMatch | CellMappingException exception) {
+                    } catch (DataTableDoesNotMatch | CellMappingException exception) {
                         throw new CucumberInvocationTargetException(
                                 this,
                                 new InvocationTargetException(
-                                    new DatatableMappingException(this.glueClass, exception)
+                                        new DatatableMappingException(this.glueClass, exception)
                                 )
                         );
-                   }
+                    }
                 });
     }
 
