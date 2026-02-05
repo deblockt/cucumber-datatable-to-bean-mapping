@@ -1,0 +1,23 @@
+project:
+  name: cucumber-datatable-to-bean-mapping
+  description: lib to map cucumber datatable to java bean using annotation
+  links:
+    homepage: https://github.com/deblockt/cucumber-datatable-to-bean-mapping
+  authors:
+    - Thomas Deblock
+  license: Apache-2.0
+  inceptionYear: "2022"
+
+signing:
+  active: ALWAYS
+  mode: MEMORY
+
+deploy:
+  maven:
+    mavenCentral:
+      sonatype:
+        active: ALWAYS
+        url: https://central.sonatype.com/api/v1/publisher
+        namespace: io.github.deblockt
+        stagingRepositories:
+          - build/staging-deploy

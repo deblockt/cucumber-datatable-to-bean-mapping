@@ -1,24 +1,8 @@
 plugins {
     id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
-    id 'me.qoomon.git-versioning' version '6.3.6'
     id 'java'
 }
 group = 'io.github.deblockt'
-
-gitVersioning.apply {
-    refs {
-        branch('.+') {
-            version = '${ref}-SNAPSHOT'
-        }
-        tag('(?<version>.*)') {
-            version = '${ref.version}'
-        }
-    }
-
-    rev {
-        version = '${commit}'
-    }
-}
 
 allprojects {
     repositories {

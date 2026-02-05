@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'signing'
 }
 
 java {
@@ -56,21 +55,18 @@ publishing {
                 }
 
                 scm {
-                    connection = 'https://github.com/deblockt/cucumber-datatable-to-bean-mapping.git'
-                    developerConnection = 'https://github.com/deblockt/cucumber-datatable-to-bean-mapping.git'
+                    connection = 'scm:git:https://github.com/deblockt/cucumber-datatable-to-bean-mapping.git'
+                    developerConnection = 'scm:git:ssh://github.com/deblockt/cucumber-datatable-to-bean-mapping.git'
                     url = 'https://github.com/deblockt/cucumber-datatable-to-bean-mapping'
                 }
             }
         }
     }
 
-    signing {
-        def signingKey = findProperty("signingKey")
-        def signingPassword = findProperty("signingPassword")
-        if (signingKey !== null && signingPassword != null) {
-            useInMemoryPgpKeys(signingKey, signingPassword)
+    repositories {
+        maven {
+            name = 'staging'
+            url = layout.buildDirectory.dir('staging-deploy')
         }
-
-        sign publishing.publications.mavenJava
     }
 }
