@@ -1,7 +1,7 @@
 package com.deblock.cucumber.datatable.mapper.typemetadata.map;
 
 import com.deblock.cucumber.datatable.data.TypeMetadata.ConversionError;
-import io.cucumber.core.internal.com.fasterxml.jackson.core.type.TypeReference;
+import io.cucumber.messages.ndjson.internal.com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -35,7 +35,6 @@ class MapTypeMetadataTest {
         ));
 
         assertThat(exception).hasMessage("Unexpected character ('}' (code 125)): expected a valid value (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n" +
-                " at [Source: (String)\"{\"foo\": }\n" +
-                "\"; line: 1, column: 10]");
+                " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 9]");
     }
 }
