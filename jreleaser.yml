@@ -20,4 +20,4 @@ deploy:
         url: https://central.sonatype.com/api/v1/publisher
         namespace: io.github.deblockt
         stagingRepositories:
-          - build/staging-deploy
+          - lib/build/staging-deploy
