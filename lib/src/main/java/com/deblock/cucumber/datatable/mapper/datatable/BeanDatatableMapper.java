@@ -5,6 +5,8 @@ import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -50,6 +52,12 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
     }
 
     private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnName parentColumnName, FieldResolver.FieldInfo fieldInfo) {
+        try {
+            Introspector.getBeanInfo(clazz).getPropertyDescriptors();
+        } catch (IntrospectionException e) {
+            throw new RuntimeException(e);
+        }
+
         final var setterName = "set" + capitalize(field.getName());
         final var setter = Arrays.stream(clazz.getMethods())
                 .filter(method -> method.getName().equals(setterName))
