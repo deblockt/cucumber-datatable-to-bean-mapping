@@ -1,9 +1,9 @@
 package com.deblock.cucumber.datatable.mapper.typemetadata.map;
 
 import com.deblock.cucumber.datatable.data.TypeMetadata;
-import io.cucumber.core.internal.com.fasterxml.jackson.core.JsonProcessingException;
-import io.cucumber.core.internal.com.fasterxml.jackson.core.type.TypeReference;
-import io.cucumber.core.internal.com.fasterxml.jackson.databind.ObjectMapper;
+import io.cucumber.messages.ndjson.internal.com.fasterxml.jackson.core.JsonProcessingException;
+import io.cucumber.messages.ndjson.internal.com.fasterxml.jackson.core.type.TypeReference;
+import io.cucumber.messages.ndjson.internal.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.lang.reflect.Type;
 

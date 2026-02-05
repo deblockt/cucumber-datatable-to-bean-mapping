@@ -1,6 +1,6 @@
 package com.deblock.cucumber.datatable.mapper.typemetadata.map;
 
-import io.cucumber.core.internal.com.fasterxml.jackson.core.type.TypeReference;
+import io.cucumber.messages.ndjson.internal.com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
