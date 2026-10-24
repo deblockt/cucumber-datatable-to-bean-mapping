@@ -88,7 +88,8 @@ The following parameters are available on the `@Column` annotation. The `@Column
 The following types can be auto mapped:
 
 - `int`, `long`, `short`, `float`, `double`, `BigDecimal`, `BigInteger`: decimal separator can be `.` or `,`.
-  Example `10.05`
+  Example `10.05` or `10,05`.
+  Thousands separators are not supported: `,` is always read as the decimal separator, so `1,000` is read as `1.0` for a `double` or a `BigDecimal`, and is an invalid value for an `int`. Write `1000` instead.
 - `boolean`: true/false
 - `string`: trim the string from the datatable
 - `enum`: the enum name can be used on datatable
@@ -290,6 +291,8 @@ class Bean {
     public ComplexType fieldToIgnore;
 }
 ```
+
+> :warning: Only the fields declared on the class itself are mapped. Fields inherited from a parent class are ignored, even if they have a `@Column` annotation.
 
 ## Configuration
 
