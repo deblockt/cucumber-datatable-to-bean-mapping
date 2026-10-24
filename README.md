@@ -11,6 +11,22 @@ It provides two main features:
 - validating the data table (checking that all headers are defined on the bean), see [validation](#validation)
 - performing the mapping
 
+## Table of contents
+
+- [Installation](#installation)
+- [Sample](#sample)
+- [Validation](#validation)
+- [Configuration](#configuration)
+- [Annotation usage](#annotation-usage)
+- [Field resolution](#field-resolution)
+- [Name resolution](#name-resolution)
+- [Java type support](#java-type-support)
+- [Custom type support](#custom-type-support)
+- [Nested object support](#nested-object-support)
+- [Extension points](#extension-points)
+- [Usage on a fat/uber jar](#usage-on-a-fatuber-jar)
+- [IDE plugins](#ide-plugins)
+
 ## Installation
 
 The library is available on Maven Central:
@@ -95,6 +111,11 @@ Then a step with a datatable
 
 And that's all: the mapping is performed automatically.
 
+Complete, runnable examples are available in the repository:
+
+- [demo](demo): step definitions using annotations (`cucumber-java`), with PicoContainer dependency injection
+- [demo-java8](demo-java8): step definitions using lambdas (`cucumber-java8`)
+
 ## Validation
 
 Before the mapping, the headers of the data table are checked against the bean.
@@ -135,6 +156,29 @@ last name (mandatory, type: string): the customer last name
 vip (optional, default: false, type: boolean)
 ```
 
+## Configuration
+
+You can configure some features of this library to suit your coding preferences.
+The configuration works the same way as the [Cucumber configuration](https://cucumber.io/docs/cucumber/api/?lang=java#options).
+
+The following properties can be set in `cucumber.properties`, or using environment variables or system properties.
+```properties
+# The property cucumber.datatable.mapper.name-builder-class accepts these values:
+# com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder -- The field name is written as a human-readable name. Example "first name"
+# com.deblock.cucumber.datatable.mapper.name.UseFieldNameColumnNameBuilder -- The field name is used without any transformation. Example "firstName"
+# com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder -- Both the human-readable name and the field name can be used.
+cucumber.datatable.mapper.name-builder-class=com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder
+# The property cucumber.datatable.mapper.field-resolver-class accepts these values:
+# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver -- Only fields with the @Column annotation are mapped
+# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver -- All public fields, or fields with a setter, are mapped. Use @Ignore to skip a field
+cucumber.datatable.mapper.field-resolver-class=com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver
+# The property cucumber.datatable.mapper.date-time-service-class sets how the `now` date time is computed. You can implement your own class to customize it
+# com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService -- The now date is static and stays the same during the whole test execution
+cucumber.datatable.mapper.date-time-service-class=com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService
+```
+
+Each of these properties also accepts your own implementation, see [extension points](#extension-points).
+
 ## Annotation usage
 
 The following parameters are available on the `@Column` annotation. The `@Column` annotation can be omitted, see the [field resolution chapter](#field-resolution).
@@ -145,6 +189,45 @@ The following parameters are available on the `@Column` annotation. The `@Column
 | description  | string   | the column description. It is displayed as a help message when a data table is malformed.                    |
 | mandatory    | boolean  | default true. Set it to false to make the column optional                                                    |
 | defaultValue | string   | the default value used if the column is not specified                                                        |
+
+## Field resolution
+
+By default, only fields with the `@Column` annotation are used as data table columns.
+If you don't want to add `@Column` to all your fields, you can set the property `cucumber.datatable.mapper.field-resolver-class` to `com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver`. In this case, all the fields of your class are mapped as optional columns.
+
+With this configuration, this class is valid:
+``` java
+@DataTableWithHeader
+class Bean {
+    public String firstColumn;
+    public String secondColumn;
+}
+```
+If you want to ignore a field, use the `@Ignore` annotation.
+``` java
+@DataTableWithHeader
+class Bean {
+    public String firstColumn;
+    public String secondColumn;
+    @Ignore
+    public ComplexType fieldToIgnore;
+}
+```
+
+> :warning: Only the fields declared on the class itself are mapped. Fields inherited from a parent class are ignored, even if they have a `@Column` annotation.
+
+## Name resolution
+
+When the column name is not explicitly specified using the `@Column` annotation, the name is derived from the field name. Three naming strategies are available:
+
+1. **Human Readable _(default)_**: Converts camel case field names to human-readable names, separating words with spaces.
+   - Example: `myFieldName` becomes `my field name`.
+2. **Field Name**: Keeps the original field name as the column name.
+   - Example: `myFieldName` becomes `myFieldName`.
+3. **Multi Name**: Combines the previous two strategies, allowing either the original field name or the human-readable name.
+   - Example: `myFieldName` becomes `myFieldName` or `my field name`.
+
+See the [configuration](#configuration) section to learn how to select a naming strategy.
 
 ## Java type support
 
@@ -173,15 +256,9 @@ The following types can be auto mapped. Wrapper types (`Integer`, `Long`, `Boole
 
   `now` returns the same date at each step of the test.
 
-> :information_source: You can customize how `now` is resolved.
->
-> Implement the interface `com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` with your own `now` function.
->
-> To use your class, set the property `cucumber.datatable.mapper.date-time-service-class` to its fully qualified name.
->
-> You also need to create a file `META-INF/services/com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` containing your class name.
+  You can customize how `now` is resolved, see [extension points](#extension-points).
 
-### Custom type support
+## Custom type support
 
 If you want to use a custom type in a data table, you can write a custom mapper.
 It can be useful when you want to convert an id to an object.
@@ -214,15 +291,36 @@ When I want to do something with a customer
 | deblockt      |
 ```
 
-You need to write a function that maps a string to a `Customer`.
-The function must be declared in your step definitions package.
+You need to write a method that maps a string to a `Customer`, and annotate it with `@CustomDatatableFieldMapper`:
 
 ```java
-@CustomDatatableFieldMapper(sample = "cucumberCode", typeDescription = "Customer")
-public Customer customerMapper(String customerCode) {
-    // Get the customer from your test context (a static context, or one injected with Spring or PicoContainer)
+public class CustomerSteps {
+    @CustomDatatableFieldMapper(sample = "deblockt", typeDescription = "Customer")
+    public Customer customerMapper(String customerCode) {
+        // Get the customer from your test context (a static context, or one injected with Spring or PicoContainer)
+    }
 }
 ```
+
+The mapper method must follow these rules:
+
+- it is declared in a public, non-abstract class of your glue packages, like your step definitions
+- it is public, and has exactly one `String` parameter
+- its return type is the mapped type. The mapper is used only for fields of exactly this type, not for its subtypes or
+  parent types
+- it can be static or not. A non-static method is called on the instance created by Cucumber, so dependency injection
+  (Spring, PicoContainer...) works as in your step definitions
+
+Define only one mapper per type: if several methods return the same type, which one is used is not defined.
+
+The annotation parameters are used in the [validation](#validation) message:
+
+| name            | description                                                    |
+|-----------------|----------------------------------------------------------------|
+| sample          | a sample value, displayed in the expected data table           |
+| typeDescription | the type name, displayed in the column descriptions            |
+
+If the mapper throws an exception, the step fails with a message giving the column, the value and the exception message.
 
 ## Nested object support
 
@@ -323,65 +421,45 @@ Using these objects, the following data tables work:
 | 10           | Thomas               | Deblock             | 11           | Nicolas              | Deblock             |
 ```
 
-## Name resolution
+## Extension points
 
-When the column name is not explicitly specified using the `@Column` annotation, the name is derived from the field name. Three naming strategies are available:
+You can replace the column name builder, the field resolver and the `now` date time computation with your own
+implementation:
 
-1. **Human Readable _(default)_**: Converts camel case field names to human-readable names, separating words with spaces.
-   - Example: `myFieldName` becomes `my field name`.
-2. **Field Name**: Keeps the original field name as the column name.
-   - Example: `myFieldName` becomes `myFieldName`.
-3. **Multi Name**: Combines the previous two strategies, allowing either the original field name or the human-readable name.
-   - Example: `myFieldName` becomes `myFieldName` or `my field name`.
+| interface                                                                  | property                                            |
+|----------------------------------------------------------------------------|-----------------------------------------------------|
+| `com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder`             | `cucumber.datatable.mapper.name-builder-class`      |
+| `com.deblock.cucumber.datatable.mapper.datatable.FieldResolver`            | `cucumber.datatable.mapper.field-resolver-class`    |
+| `com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService`  | `cucumber.datatable.mapper.date-time-service-class` |
 
-See the [configuration](#configuration) section to learn how to select a naming strategy.
+To use your own implementation:
 
+1. Implement the interface in a class with a public no-argument constructor.
+2. Register the class with [Java SPI](https://www.baeldung.com/java-spi): create a file
+   `META-INF/services/<interface fully qualified name>` containing your class fully qualified name.
+3. Set the matching property to your class fully qualified name, see [configuration](#configuration).
 
-## Field resolution
+For example, to compute `now` yourself:
 
-By default, only fields with the `@Column` annotation are used as data table columns.
-If you don't want to add `@Column` to all your fields, you can set the property `cucumber.datatable.mapper.field-resolver-class` to `com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver`. In this case, all the fields of your class are mapped as optional columns.
+```java
+package com.example;
 
-With this configuration, this class is valid:
-``` java
-@DataTableWithHeader
-class Bean {
-    public String firstColumn;
-    public String secondColumn;
-}
-```
-If you want to ignore a field, use the `@Ignore` annotation.
-``` java
-@DataTableWithHeader
-class Bean {
-    public String firstColumn;
-    public String secondColumn;
-    @Ignore
-    public ComplexType fieldToIgnore;
+public class FixedDateTimeService implements DateTimeService {
+    @Override
+    public OffsetDateTime now() {
+        return OffsetDateTime.parse("2024-01-01T10:00:00Z");
+    }
 }
 ```
 
-> :warning: Only the fields declared on the class itself are mapped. Fields inherited from a parent class are ignored, even if they have a `@Column` annotation.
-
-## Configuration
-
-You can configure some features of this library to suit your coding preferences.
-The configuration works the same way as the [Cucumber configuration](https://cucumber.io/docs/cucumber/api/?lang=java#options).
-
-The following properties can be set in `cucumber.properties`, or using environment variables or system properties.
 ```properties
-# The property cucumber.datatable.mapper.name-builder-class accepts these values:
-# com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder -- The field name is written as a human-readable name. Example "first name"
-# com.deblock.cucumber.datatable.mapper.name.UseFieldNameColumnNameBuilder -- The field name is used without any transformation. Example "firstName"
-# com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder -- Both the human-readable name and the field name can be used.
-cucumber.datatable.mapper.name-builder-class=com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder
-# The property cucumber.datatable.mapper.field-resolver-class accepts these values:
-# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver -- Only fields with the @Column annotation are mapped
-# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver -- All public fields, or fields with a setter, are mapped. Use @Ignore to skip a field
-cucumber.datatable.mapper.field-resolver-class=com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver
-# The property cucumber.datatable.mapper.date-time-service-class sets how the `now` date time is computed. You can implement your own class to customize it
-# com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService -- The now date is static and stays the same during the whole test execution
-cucumber.datatable.mapper.date-time-service-class=com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService
+# src/test/resources/META-INF/services/com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService
+com.example.FixedDateTimeService
+```
+
+```properties
+# src/test/resources/cucumber.properties
+cucumber.datatable.mapper.date-time-service-class=com.example.FixedDateTimeService
 ```
 
 ## Usage on a fat/uber jar
