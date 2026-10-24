@@ -66,4 +66,11 @@ public class DateTypeMetadataTest {
 
         assertThat(result).isEqualTo(LocalDate.parse("2022-11-28"));
     }
+
+    @Test
+    public void sampleShouldBeAValidValue() {
+        final var result = typeMetadata.convert(typeMetadata.sample());
+
+        assertThat(result).isEqualTo(NOW.plusDays(1));
+    }
 }

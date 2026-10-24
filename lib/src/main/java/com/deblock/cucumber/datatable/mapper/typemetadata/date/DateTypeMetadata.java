@@ -26,7 +26,7 @@ public class DateTypeMetadata implements TypeMetadata {
 
     @Override
     public String sample() {
-        return "now + 1";
+        return "now + 1 day";
     }
 
     @Override
