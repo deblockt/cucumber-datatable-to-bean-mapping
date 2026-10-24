@@ -1,18 +1,41 @@
 # Cucumber datatable to bean mapping
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.deblockt/cucumber-datatable-to-bean-mapping)](https://central.sonatype.com/artifact/io.github.deblockt/cucumber-datatable-to-bean-mapping)
+
 The goal of this library is to map
 [Gherkin data tables](https://cucumber.io/docs/gherkin/reference/#data-tables) to Java beans automatically.
 It provides annotations to describe the mapping.
 
 It provides two main features:
 
-- validating the data table (checking that all headers are defined on the bean)
+- validating the data table (checking that all headers are defined on the bean), see [validation](#validation)
 - performing the mapping
 
 ## Installation
 
 The library is available on Maven Central:
-[io.github.deblockt:cucumber-datatable-to-bean-mapping](https://mvnrepository.com/artifact/io.github.deblockt/cucumber-datatable-to-bean-mapping/latest)
+[io.github.deblockt:cucumber-datatable-to-bean-mapping](https://central.sonatype.com/artifact/io.github.deblockt/cucumber-datatable-to-bean-mapping).
+Replace `<version>` with the version shown on the badge above.
+
+Gradle:
+
+``` gradle
+testImplementation 'io.github.deblockt:cucumber-datatable-to-bean-mapping:<version>'
+```
+
+Maven:
+
+``` xml
+<dependency>
+    <groupId>io.github.deblockt</groupId>
+    <artifactId>cucumber-datatable-to-bean-mapping</artifactId>
+    <version><version></version>
+    <scope>test</scope>
+</dependency>
+```
+
+This library does not bring Cucumber with it: add your own Cucumber dependency (for example `io.cucumber:cucumber-java`).
+It is built and tested with Cucumber 7.
 
 This library supports only Java 17+.
 
@@ -72,6 +95,46 @@ Then a step with a datatable
 
 And that's all: the mapping is performed automatically.
 
+## Validation
+
+Before the mapping, the headers of the data table are checked against the bean.
+If a mandatory column is missing, or if a column is not defined on the bean, the step fails with a message
+describing the expected data table.
+
+For example, with this bean:
+
+``` java
+@DataTableWithHeader
+record Customer(
+    @Column(value = "first name", description = "the customer first name")
+    String firstName,
+    @Column(value = "last name", description = "the customer last name")
+    String lastName,
+    @Column(value = "vip", mandatory = false, defaultValue = "false")
+    boolean vip
+) { }
+```
+
+This data table:
+
+``` gherkin
+Given the following customers
+  | first name |
+  | Thomas     |
+```
+
+fails with:
+
+```
+The following headers are mandatory : "last name"
+| first name | last name | vip  |
+| string     | string    | true |
+
+first name (mandatory, type: string): the customer first name
+last name (mandatory, type: string): the customer last name
+vip (optional, default: false, type: boolean)
+```
+
 ## Annotation usage
 
 The following parameters are available on the `@Column` annotation. The `@Column` annotation can be omitted, see the [field resolution chapter](#field-resolution).
@@ -87,14 +150,17 @@ The following parameters are available on the `@Column` annotation. The `@Column
 
 The following types can be auto mapped. Wrapper types (`Integer`, `Long`, `Boolean`...) are supported too.
 
-- `int`, `long`, `short`, `float`, `double`, `BigDecimal`, `BigInteger`: decimal separator can be `.` or `,`.
+- `int`, `long`, `short`, `float`, `double`, `BigDecimal`, `BigInteger`: the decimal separator can be `.` or `,`.
   Example `10.05` or `10,05`.
   Thousands separators are not supported: `,` is always read as the decimal separator, so `1,000` is read as `1.0` for a `double` or a `BigDecimal`, and is an invalid value for an `int`. Write `1000` instead.
-- `boolean`: true/false
+- `boolean`: `true` or `false`
 - `String`: the value from the data table is trimmed
 - `UUID`: a standard UUID string. Example `123e4567-e89b-12d3-a456-426614174000`
 - `enum`: use the enum constant name in the data table
-- `List`, `Set`, `Collection`: the generic type can be any type supported by the mapping. Items are split using a `,`
+- `List`, `Set`, `Collection`: the generic type can be any type supported by the mapping. Items are split using a `,` and trimmed.
+  Example `1, 3, 5` for a `List<Integer>`.
+  As `,` is the item separator, use `.` as the decimal separator in a list: `1.5, 2.5` for a `List<Double>`.
+  `1,5` is read as two items, `1` and `5`.
 - `Map`: the cell is a JSON object, parsed with [Gson](https://github.com/google/gson) to the generic types of the map.
   Example `{"math": [12, 15], "music": []}` for a `Map<String, List<Integer>>`
 - `OffsetDateTime`, `LocalDateTime`, `LocalDate`: an ISO formatted date or a relative date.
@@ -102,6 +168,8 @@ The following types can be auto mapped. Wrapper types (`Integer`, `Long`, `Boole
   A relative date uses the `now` keyword.
 
   You can add or subtract an amount of time from now: `now + 1 day`, `now - 3 weeks`.
+  The available units are `day`, `week`, `month` and `year`, plus `hour`, `minute`, `second` and `milli` for
+  `OffsetDateTime` and `LocalDateTime`. Each unit can be written in singular or plural form.
 
   `now` returns the same date at each step of the test.
 
