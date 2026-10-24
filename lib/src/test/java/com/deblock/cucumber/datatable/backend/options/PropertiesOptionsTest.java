@@ -1,5 +1,6 @@
 package com.deblock.cucumber.datatable.backend.options;
 
+import com.deblock.cucumber.datatable.backend.ChildFirstClassLoader;
 import com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder;
 import com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService;
@@ -8,11 +9,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PropertiesOptionsTest {
+    private static final Supplier<ClassLoader> CLASS_LOADER = PropertiesOptionsTest.class::getClassLoader;
 
     @Nested
     class GetNameBuilderClassMethod {
@@ -20,7 +23,7 @@ class PropertiesOptionsTest {
         void shouldThrowExceptionIfClassDoesNotExists() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.NAME_BUILDER_CLASS_PROPERTY_NAME, "com.test.TestUnknown"
-            ));
+            ), CLASS_LOADER);
 
             final var exception = assertThrows(CucumberException.class, propertiesOptions::getNameBuilderClass);
 
@@ -31,7 +34,7 @@ class PropertiesOptionsTest {
         void shouldThrowExceptionIfClassDoesNotExtendsNameBuilder() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.NAME_BUILDER_CLASS_PROPERTY_NAME, "com.deblock.cucumber.datatable.backend.options.PropertiesOptionsTest"
-            ));
+            ), CLASS_LOADER);
 
             final var exception = assertThrows(CucumberException.class, propertiesOptions::getNameBuilderClass);
 
@@ -42,7 +45,7 @@ class PropertiesOptionsTest {
         void shouldReturnTheClassIfItIsOk() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.NAME_BUILDER_CLASS_PROPERTY_NAME, "com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder"
-            ));
+            ), CLASS_LOADER);
 
             final var result = propertiesOptions.getNameBuilderClass();
 
@@ -51,7 +54,7 @@ class PropertiesOptionsTest {
 
         @Test
         void returnNullIfPropertyIsNotSet() {
-            PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of());
+            PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(), CLASS_LOADER);
 
             final var result = propertiesOptions.getNameBuilderClass();
 
@@ -65,7 +68,7 @@ class PropertiesOptionsTest {
         void shouldThrowExceptionIfClassDoesNotExists() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.FIELD_RESOLVER_CLASS_PROPERTY_NAME, "com.test.TestUnknown"
-            ));
+            ), CLASS_LOADER);
 
             final var exception = assertThrows(CucumberException.class, propertiesOptions::getFieldResolverClass);
 
@@ -76,7 +79,7 @@ class PropertiesOptionsTest {
         void shouldThrowExceptionIfClassDoesNotExtendsNameBuilder() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.FIELD_RESOLVER_CLASS_PROPERTY_NAME, "com.deblock.cucumber.datatable.backend.options.PropertiesOptionsTest"
-            ));
+            ), CLASS_LOADER);
 
             final var exception = assertThrows(CucumberException.class, propertiesOptions::getFieldResolverClass);
 
@@ -87,7 +90,7 @@ class PropertiesOptionsTest {
         void shouldReturnTheClassIfItIsOk() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.FIELD_RESOLVER_CLASS_PROPERTY_NAME, "com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver"
-            ));
+            ), CLASS_LOADER);
 
             final var result = propertiesOptions.getFieldResolverClass();
 
@@ -95,8 +98,21 @@ class PropertiesOptionsTest {
         }
 
         @Test
+        void shouldLoadTheClassWithTheGivenClassLoader() {
+            final var classLoader = new ChildFirstClassLoader(DeclarativeFieldResolver.class.getName(), CLASS_LOADER.get());
+            PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
+                    PropertiesConstants.FIELD_RESOLVER_CLASS_PROPERTY_NAME, DeclarativeFieldResolver.class.getName()
+            ), () -> classLoader);
+
+            final var result = propertiesOptions.getFieldResolverClass();
+
+            assertThat(result.getName()).isEqualTo(DeclarativeFieldResolver.class.getName());
+            assertThat(result.getClassLoader()).isSameAs(classLoader);
+        }
+
+        @Test
         void returnNullIfPropertyIsNotSet() {
-            PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of());
+            PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(), CLASS_LOADER);
 
             final var result = propertiesOptions.getFieldResolverClass();
 
@@ -110,7 +126,7 @@ class PropertiesOptionsTest {
         void shouldThrowExceptionIfClassDoesNotExists() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.DATE_TIME_SERVICE_CLASS_PROPERTY_NAME, "com.test.TestUnknown"
-            ));
+            ), CLASS_LOADER);
 
             final var exception = assertThrows(CucumberException.class, propertiesOptions::getDateTimeServiceClass);
 
@@ -121,7 +137,7 @@ class PropertiesOptionsTest {
         void shouldThrowExceptionIfClassDoesNotExtendsNameBuilder() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.DATE_TIME_SERVICE_CLASS_PROPERTY_NAME, "com.deblock.cucumber.datatable.backend.options.PropertiesOptionsTest"
-            ));
+            ), CLASS_LOADER);
 
             final var exception = assertThrows(CucumberException.class, propertiesOptions::getDateTimeServiceClass);
 
@@ -132,7 +148,7 @@ class PropertiesOptionsTest {
         void shouldReturnTheClassIfItIsOk() {
             PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(
                     PropertiesConstants.DATE_TIME_SERVICE_CLASS_PROPERTY_NAME, "com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService"
-            ));
+            ), CLASS_LOADER);
 
             final var result = propertiesOptions.getDateTimeServiceClass();
 
@@ -141,7 +157,7 @@ class PropertiesOptionsTest {
 
         @Test
         void returnNullIfPropertyIsNotSet() {
-            PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of());
+            PropertiesOptions propertiesOptions = new PropertiesOptions(Map.of(), CLASS_LOADER);
 
             final var result = propertiesOptions.getDateTimeServiceClass();
 

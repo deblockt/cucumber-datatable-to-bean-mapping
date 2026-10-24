@@ -15,9 +15,9 @@ public class DatatableToBeanMappingBackendProviderService implements BackendProv
     @Override
     public Backend create(Lookup lookup, Container container, Supplier<ClassLoader> classLoader) {
         final var options = new MergedOptions(
-                new PropertiesOptions(CucumberProperties.fromSystemProperties()),
-                new PropertiesOptions(CucumberProperties.fromEnvironment()),
-                new PropertiesOptions(CucumberProperties.fromPropertiesFile()),
+                new PropertiesOptions(CucumberProperties.fromSystemProperties(), classLoader),
+                new PropertiesOptions(CucumberProperties.fromEnvironment(), classLoader),
+                new PropertiesOptions(CucumberProperties.fromPropertiesFile(), classLoader),
                 new DefaultOptions()
         );
         return new DatatableToBeanMappingBackend(classLoader, options, lookup);
