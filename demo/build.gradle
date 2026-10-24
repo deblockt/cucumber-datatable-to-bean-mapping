@@ -15,6 +15,11 @@ configurations {
     }
 }
 
+// No JUnit runner here, the scenarios run with cucumberCli
+tasks.named('test') {
+    failOnNoDiscoveredTests = false
+}
+
 tasks.register('cucumberCli', JavaExec) {
     dependsOn assemble, testClasses
     mainClass = 'io.cucumber.core.cli.Main'

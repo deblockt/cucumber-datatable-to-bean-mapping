@@ -6,13 +6,18 @@ dependencies {
     testImplementation project(':lib')
 
     // Old Cucumber version on purpose, to check compatibility with older Cucumber releases
-    testImplementation group: 'io.cucumber', name: 'cucumber-java8', version: '7.10.0'
+    testImplementation 'io.cucumber:cucumber-java8:7.10.0'
 }
 
 configurations {
     cucumberRuntime {
         extendsFrom testImplementation
     }
+}
+
+// No JUnit runner here, the scenarios run with cucumberCli
+tasks.named('test') {
+    failOnNoDiscoveredTests = false
 }
 
 tasks.register('cucumberCli', JavaExec) {
