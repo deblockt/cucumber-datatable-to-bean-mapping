@@ -20,3 +20,9 @@ Feature: Mapping
     Given a step with a list
       | string | integer |
       | s      | 10      |
+
+  Scenario: Map a json object column to a Map
+    Given a step with a map column
+      | name  | scores                          |
+      | alice | {"math": [12, 15], "music": []} |
+      | bob   |                                 |

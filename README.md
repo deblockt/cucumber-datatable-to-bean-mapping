@@ -93,6 +93,8 @@ The following types can be auto mapped:
 - `string`: trim the string from the datatable
 - `enum`: the enum name can be used on datatable
 - `List`, `Set`, `Collection`: the generic can be a type managed by the mapping. Item on datatable are split using a `,`
+- `Map`: the cell is a JSON object, parsed with [Gson](https://github.com/google/gson) to the generic types of the map.
+  Example `{"math": [12, 15], "music": []}` for a `Map<String, List<Integer>>`
 - `OffsetDateTime`, `LocalDateTime`, `LocalDate`: date time. Can be ISO formatted date or relative date.
 
   Relative date can be specified using `now` keyword.
