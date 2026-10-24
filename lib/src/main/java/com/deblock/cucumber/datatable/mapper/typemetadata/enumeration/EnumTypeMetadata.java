@@ -1,6 +1,7 @@
 package com.deblock.cucumber.datatable.mapper.typemetadata.enumeration;
 
 import com.deblock.cucumber.datatable.data.TypeMetadata;
+import com.deblock.cucumber.datatable.mapper.ObjectCreationException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,8 +24,11 @@ public class EnumTypeMetadata implements TypeMetadata {
             this.valuesString = Arrays.stream(((Object[]) values)).map(Object::toString).collect(Collectors.joining(", "));
             this.firstValue = ((Object[]) values)[0].toString();
             this.valueOf = this.clazz.getDeclaredMethod("valueOf", String.class);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        } catch (NoSuchMethodException | InvocationTargetException e) {
+            // values() and valueOf(String) are generated for every enum and can not throw
+            throw new IllegalStateException("Enum " + clazz.getSimpleName() + ": can not read the enum values", e);
+        } catch (IllegalAccessException e) {
+            throw new ObjectCreationException("Enum " + clazz.getSimpleName() + ": can not call values()", e);
         }
     }
 
@@ -56,7 +60,7 @@ public class EnumTypeMetadata implements TypeMetadata {
             }
             throw new ConversionError("%s can not be converted to enum %s".formatted(value, this.clazz.getName()), targetException);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new ObjectCreationException("Enum " + this.clazz.getSimpleName() + ": can not call valueOf()", e);
         }
     }
 }

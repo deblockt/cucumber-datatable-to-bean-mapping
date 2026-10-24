@@ -5,10 +5,13 @@ import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.GenericMapperFactory;
 import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
+import com.deblock.cucumber.datatable.mapper.ObjectCreationException;
 import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.beans.Bean;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedObjects;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithNestedRecordNameMapping;
+import com.deblock.cucumber.datatable.mapper.beans.BeanWithThrowingConstructor;
+import com.deblock.cucumber.datatable.mapper.beans.BeanWithThrowingSetter;
 import com.deblock.cucumber.datatable.mapper.beans.BeanWithUnsupportedConverter;
 import com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper;
 import com.deblock.cucumber.datatable.mapper.beans.MalformedBeanPrivateColumnWithPrivateSetter;
@@ -189,6 +192,38 @@ public class BeanMapperTest {
         );
 
         assertThat(result).hasMessage("can not find any converter for class class com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper. You can define your own converter using @CustomDatatableFieldMapper");
+    }
+
+    @Test
+    public void shouldGiveClassAndSetterNameWhenSetterThrows() {
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
+                .build(BeanWithThrowingSetter.class);
+
+        final var result = assertThrows(
+                ObjectCreationException.class,
+                () -> beanMapper.convert(Map.of("value", "test"))
+        );
+
+        assertThat(result).hasMessage("Class BeanWithThrowingSetter: setter setValue threw an exception");
+        assertThat(result.getCause())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("invalid value test");
+    }
+
+    @Test
+    public void shouldGiveClassNameWhenConstructorThrows() {
+        final var beanMapper = new GenericMapperFactory(new BeanMapperTest.MockMetadataFactory(), defaultFieldResolver())
+                .build(BeanWithThrowingConstructor.class);
+
+        final var result = assertThrows(
+                ObjectCreationException.class,
+                () -> beanMapper.convert(Map.of("value", "test"))
+        );
+
+        assertThat(result).hasMessage("Class BeanWithThrowingConstructor: constructor threw an exception");
+        assertThat(result.getCause())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("constructor failure");
     }
 
     public FieldResolver defaultFieldResolver() {

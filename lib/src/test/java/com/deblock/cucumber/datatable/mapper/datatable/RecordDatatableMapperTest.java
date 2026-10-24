@@ -4,11 +4,13 @@ import com.deblock.cucumber.datatable.annotations.DataTableWithHeader;
 import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.data.TypeMetadata;
 import com.deblock.cucumber.datatable.mapper.GenericMapperFactory;
+import com.deblock.cucumber.datatable.mapper.ObjectCreationException;
 import com.deblock.cucumber.datatable.mapper.TypeMetadataFactory;
 import com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper;
 import com.deblock.cucumber.datatable.mapper.beans.Record;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecord;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithNestedRecordNameMapping;
+import com.deblock.cucumber.datatable.mapper.beans.RecordWithThrowingConstructor;
 import com.deblock.cucumber.datatable.mapper.beans.RecordWithUnsupportedConverter;
 import com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder;
@@ -164,6 +166,21 @@ public class RecordDatatableMapperTest {
         );
 
         assertThat(result).hasMessage("can not find any converter for class class com.deblock.cucumber.datatable.mapper.beans.CustomBeanWithoutMapper. You can define your own converter using @CustomDatatableFieldMapper");
+    }
+
+    @Test
+    public void shouldGiveRecordNameWhenConstructorThrows() {
+        final var beanMapper = new GenericMapperFactory(new MockMetadataFactory(), defaultFieldResolver()).build(RecordWithThrowingConstructor.class);
+
+        final var result = assertThrows(
+                ObjectCreationException.class,
+                () -> beanMapper.convert(Map.of("value", "test"))
+        );
+
+        assertThat(result).hasMessage("Class RecordWithThrowingConstructor: constructor threw an exception");
+        assertThat(result.getCause())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("invalid value test");
     }
 
     public FieldResolver defaultFieldResolver() {

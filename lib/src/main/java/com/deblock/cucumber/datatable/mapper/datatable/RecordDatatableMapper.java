@@ -2,6 +2,7 @@ package com.deblock.cucumber.datatable.mapper.datatable;
 
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
+import com.deblock.cucumber.datatable.mapper.ObjectCreationException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -26,7 +27,8 @@ public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMa
         try {
             this.constructor = recordClass.getDeclaredConstructor(types);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            // a record always has a canonical constructor
+            throw new IllegalStateException("Class " + recordClass.getSimpleName() + ": canonical constructor not found", e);
         }
     }
 
@@ -35,10 +37,13 @@ public class RecordDatatableMapper extends BaseObjectDatatableMapper<DatatableMa
         final var values = this.fields.stream()
                 .map(it -> it.convert(entry))
                 .toArray();
+        final var className = this.constructor.getDeclaringClass().getSimpleName();
         try {
             return constructor.newInstance(values);
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new ObjectCreationException("Class " + className + ": constructor threw an exception", e.getCause());
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new ObjectCreationException("Class " + className + ": can not call the constructor", e);
         }
     }
 
