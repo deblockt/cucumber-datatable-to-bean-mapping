@@ -2,14 +2,9 @@ plugins {
     id 'java'
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
 dependencies {
     testImplementation project(':lib')
+    // Old Cucumber version on purpose, to check compatibility with older Cucumber releases
     testImplementation 'io.cucumber:cucumber-java:7.8.1'
     testImplementation 'io.cucumber:cucumber-picocontainer:7.8.1'
 }
@@ -20,18 +15,19 @@ configurations {
     }
 }
 
-task cucumberCli() {
+// No JUnit runner here, the scenarios run with cucumberCli
+tasks.named('test') {
+    failOnNoDiscoveredTests = false
+}
+
+tasks.register('cucumberCli', JavaExec) {
     dependsOn assemble, testClasses
-    doLast {
-        javaexec {
-            main = "io.cucumber.core.cli.Main"
-            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
-            args = [
-                    '--plugin', 'pretty',
-                    '--plugin', 'html:target/cucumber-report.html',
-                    '--glue', 'com.deblock.cucumber',
-                    'src/test/resources'
-            ]
-        }
-    }
+    mainClass = 'io.cucumber.core.cli.Main'
+    classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+    args = [
+            '--plugin', 'pretty',
+            '--plugin', 'html:target/cucumber-report.html',
+            '--glue', 'com.deblock.cucumber',
+            'src/test/resources'
+    ]
 }
