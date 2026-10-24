@@ -83,8 +83,8 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
     }
 
     protected static class FieldData implements DatatableMapper {
-        private DatatableMapper mapper;
-        private BiConsumer<Object, Object> setter;
+        private final DatatableMapper mapper;
+        private final BiConsumer<Object, Object> setter;
 
         public FieldData(DatatableMapper mapper, BiConsumer<Object, Object> setter) {
             this.mapper = mapper;
