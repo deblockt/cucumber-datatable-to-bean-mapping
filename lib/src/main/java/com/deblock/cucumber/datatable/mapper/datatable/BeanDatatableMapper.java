@@ -4,6 +4,7 @@ import com.deblock.cucumber.datatable.data.DatatableHeader;
 import com.deblock.cucumber.datatable.mapper.DatatableMapper;
 import com.deblock.cucumber.datatable.mapper.MalformedBeanException;
 import com.deblock.cucumber.datatable.mapper.MapperFactory;
+import com.deblock.cucumber.datatable.mapper.ObjectCreationException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -29,13 +30,16 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
     @Override
     public Object convert(Map<String, String> entry) {
         final Object instance;
+        final var className = this.constructor.getDeclaringClass().getSimpleName();
         try {
             instance = this.constructor.newInstance();
-            this.fields.forEach(it -> it.setter.accept(instance, it.convert(entry)));
-            return instance;
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new ObjectCreationException("Class " + className + ": constructor threw an exception", e.getCause());
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new ObjectCreationException("Class " + className + ": can not call the constructor", e);
         }
+        this.fields.forEach(it -> it.setter.accept(instance, it.convert(entry)));
+        return instance;
     }
 
     private static List<FieldData> buildFieldsData(Class<?> clazz, MapperFactory mapperFactory, ColumnName parentColumnName, FieldResolver fieldResolver) {
@@ -59,8 +63,10 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
             return new FieldData(datatableMapper, (bean, object) -> {
                 try {
                     setter.get().invoke(bean, object);
-                } catch (InvocationTargetException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new ObjectCreationException("Class " + clazz.getSimpleName() + ": setter " + setter.get().getName() + " threw an exception", e.getCause());
+                } catch (IllegalAccessException e) {
+                    throw new ObjectCreationException("Class " + clazz.getSimpleName() + ": can not call the setter " + setter.get().getName(), e);
                 }
             });
         } else if (Modifier.isPublic(field.getModifiers())) {
@@ -68,7 +74,7 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
                 try {
                     field.set(bean, object);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
+                    throw new ObjectCreationException("Class " + clazz.getSimpleName() + ": can not set the field " + field.getName(), e);
                 }
             });
         } else {
