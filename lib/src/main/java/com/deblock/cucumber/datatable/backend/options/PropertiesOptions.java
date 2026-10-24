@@ -6,6 +6,7 @@ import com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService;
 import io.cucumber.core.exception.CucumberException;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.deblock.cucumber.datatable.backend.options.PropertiesConstants.DATE_TIME_SERVICE_CLASS_PROPERTY_NAME;
 import static com.deblock.cucumber.datatable.backend.options.PropertiesConstants.FIELD_RESOLVER_CLASS_PROPERTY_NAME;
@@ -13,9 +14,11 @@ import static com.deblock.cucumber.datatable.backend.options.PropertiesConstants
 
 public class PropertiesOptions implements FullOptions {
     private final Map<String, String> properties;
+    private final Supplier<ClassLoader> classLoaderSupplier;
 
-    public PropertiesOptions(Map<String, String> properties) {
+    public PropertiesOptions(Map<String, String> properties, Supplier<ClassLoader> classLoaderSupplier) {
         this.properties = properties;
+        this.classLoaderSupplier = classLoaderSupplier;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class PropertiesOptions implements FullOptions {
             return null;
         }
         try {
-            Class<?> clazz = Class.forName(className);
+            Class<?> clazz = Class.forName(className, false, classLoaderSupplier.get());
             if (!loaderClazz.isAssignableFrom(clazz)) {
                 throw new CucumberException("The class '%s' was not a subclass of '%s'.".formatted(clazz, loaderClazz));
             }
