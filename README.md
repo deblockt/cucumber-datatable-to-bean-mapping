@@ -1,44 +1,44 @@
 # Cucumber datatable to bean mapping
 
-The goal of this lib is to perform automatic mapping
-between [gherkins datatable](https://cucumber.io/docs/gherkin/reference/#data-tables) and Java bean.
-It provides some annotations to describe the mapping.
+The goal of this library is to map
+[Gherkin data tables](https://cucumber.io/docs/gherkin/reference/#data-tables) to Java beans automatically.
+It provides annotations to describe the mapping.
 
-Two main features are provided:
+It provides two main features:
 
-- validate the datatable (validate that all headers are defined on bean)
-- perform the mapping
-
-
+- validating the data table (checking that all headers are defined on the bean)
+- performing the mapping
 
 ## Installation
 
-It's available on maven central repository.
-You can find it
-here [io.github.deblockt:cucumber-datatable-to-bean-mapping](https://mvnrepository.com/artifact/io.github.deblockt/cucumber-datatable-to-bean-mapping/latest)
+The library is available on Maven Central:
+[io.github.deblockt:cucumber-datatable-to-bean-mapping](https://mvnrepository.com/artifact/io.github.deblockt/cucumber-datatable-to-bean-mapping/latest)
 
-This lib support only java 17+.
+This library supports only Java 17+.
 
 ## Sample
 
 Using this bean:
 
 ``` java 
-@DataTableWithHeader // this annotation is used to register this class as a Datatable
+@DataTableWithHeader // registers this class as a data table
 class Bean {
-    @Column("column 1") // this annotation register this var as a column of the datatable
+    @Column("column 1") // registers this field as a column of the data table
     public String column1;
 
-    @Column(mandatory = false) // the column value is optional. If not specified the field name will be used
+    @Column(mandatory = false) // the column is optional. The column name is built from the field name
     public String column2;
 }
+```
 
-// compatible with records
-@DataTableWithHeader // this annotation is used to register this class as a Datatable
+Records are supported too:
+
+``` java
+@DataTableWithHeader // registers this record as a data table
 record Bean(
-    @Column("column 1") // this annotation register this var as a column of the datatable
+    @Column("column 1") // registers this component as a column of the data table
     String column1,
-    @Column(mandatory = false) // the column value is optional. If not specified the field name will be used
+    @Column(mandatory = false) // the column is optional. The column name is built from the field name
     String column2
 ) { }
 
@@ -67,10 +67,10 @@ You can write this step:
 Then a step with a datatable
   | column 1 | column2 |
   | value1   | value2  |
-  | value3   |         | 
+  | value3   |         |
 ```
 
-And That's all. The mapping is performed automatically.
+And that's all: the mapping is performed automatically.
 
 ## Annotation usage
 
@@ -78,53 +78,54 @@ The following parameters are available on the `@Column` annotation. The `@Column
 
 | name         | type     | description                                                                                                  |
 |--------------|----------|--------------------------------------------------------------------------------------------------------------|
-| value        | string[] | the column name. You can specify multiple name for the same column. The default value is builded from the field name. see [name resolution chapter](#name-resolution)      |
-| description  | string   | the column description. The description is displayed when a datatable is malformed to show a helper message. |
-| mandatory    | boolean  | default true. Can be set to false to set the column to optional                                              |
+| value        | string[] | the column name. You can specify several names for the same column. The default value is built from the field name, see the [name resolution chapter](#name-resolution) |
+| description  | string   | the column description. It is displayed as a help message when a data table is malformed.                    |
+| mandatory    | boolean  | default true. Set it to false to make the column optional                                                    |
 | defaultValue | string   | the default value used if the column is not specified                                                        |
 
 ## Java type support
 
-The following types can be auto mapped:
+The following types can be auto mapped. Wrapper types (`Integer`, `Long`, `Boolean`...) are supported too.
 
 - `int`, `long`, `short`, `float`, `double`, `BigDecimal`, `BigInteger`: decimal separator can be `.` or `,`.
   Example `10.05` or `10,05`.
   Thousands separators are not supported: `,` is always read as the decimal separator, so `1,000` is read as `1.0` for a `double` or a `BigDecimal`, and is an invalid value for an `int`. Write `1000` instead.
 - `boolean`: true/false
-- `string`: trim the string from the datatable
-- `enum`: the enum name can be used on datatable
-- `List`, `Set`, `Collection`: the generic can be a type managed by the mapping. Item on datatable are split using a `,`
+- `String`: the value from the data table is trimmed
+- `UUID`: a standard UUID string. Example `123e4567-e89b-12d3-a456-426614174000`
+- `enum`: use the enum constant name in the data table
+- `List`, `Set`, `Collection`: the generic type can be any type supported by the mapping. Items are split using a `,`
 - `Map`: the cell is a JSON object, parsed with [Gson](https://github.com/google/gson) to the generic types of the map.
   Example `{"math": [12, 15], "music": []}` for a `Map<String, List<Integer>>`
-- `OffsetDateTime`, `LocalDateTime`, `LocalDate`: date time. Can be ISO formatted date or relative date.
+- `OffsetDateTime`, `LocalDateTime`, `LocalDate`: an ISO formatted date or a relative date.
 
-  Relative date can be specified using `now` keyword.
+  A relative date uses the `now` keyword.
 
-  You can add or subtract amount of time from now. `now + 1 day`, `now - 3 weeks`.
+  You can add or subtract an amount of time from now: `now + 1 day`, `now - 3 weeks`.
 
-  `now` will return the same date at each step of the test.
+  `now` returns the same date at each step of the test.
 
-> :information_source: You can customize the way to resolve `now`. 
-> 
-> You can implement the interface `com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` and implement your custom now function.
-> 
-> To use you custom class, you should set the property `cucumber.datatable.mapper.date-time-service-class` with your class reference.
-> 
-> You should create a file `META-INF/services/com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` and put your class reference inside.
+> :information_source: You can customize how `now` is resolved.
+>
+> Implement the interface `com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` with your own `now` function.
+>
+> To use your class, set the property `cucumber.datatable.mapper.date-time-service-class` to its fully qualified name.
+>
+> You also need to create a file `META-INF/services/com.deblock.cucumber.datatable.mapper.typemetadata.date.DateTimeService` containing your class name.
 
 ### Custom type support
 
-If you want to use a custom type on datatable, you can write custom mapper. 
-It can be useful when you want to convert id to object.
+If you want to use a custom type in a data table, you can write a custom mapper.
+It can be useful when you want to convert an id to an object.
 
-For example, If you have an object `Customer`:
+For example, if you have an object `Customer`:
 
 ```java
 record Customer(String code, String firstName, String lastName) {
 }
 ```
 
-And you want map a datatable to the following bean:
+And you want to map a data table to the following bean:
 
 ``` java
 @DataTableWithHeader
@@ -134,7 +135,7 @@ record Bean(
 ) { }
 ```
 
-If you want this steps to work
+If you want these steps to work:
 
 ```gherkin
 Given the following customer exists
@@ -145,20 +146,20 @@ When I want to do something with a customer
 | deblockt      |
 ```
 
-You need to write a function to map a string to a Customer.
-The function should be provided on your steps package.
+You need to write a function that maps a string to a `Customer`.
+The function must be declared in your step definitions package.
 
 ```java
 @CustomDatatableFieldMapper(sample = "cucumberCode", typeDescription = "Customer")
 public Customer customerMapper(String customerCode) {
-    // Get the customer on your test context (using static context or injected with spring or picocontainer
+    // Get the customer from your test context (a static context, or one injected with Spring or PicoContainer)
 }
 ```
 
-## Nested Datatable object support
+## Nested object support
 
-If you have big datatable, you can organize your objects using nested object.
-For example, if you have a `Customer` object, you can have a `PersonalInformation` Object.
+If you have big data tables, you can organize your objects using nested objects.
+For example, a `Customer` object can contain a `PersonalInformation` object.
 
 ```java
 
@@ -181,14 +182,14 @@ record PersonalInformation(
 }
 ```
 
-Using these objects, the datatable will look like
+Using these objects, the data table looks like this:
 
 ```gherkin
 | id | first name | last name |
 | 10 | Thomas     | Deblock   |
 ```
 
-Now If you have another object `Conversation` with two customer, like that:
+Now, if you have another object `Conversation` with two customers, like this:
 
 ```java
 
@@ -202,9 +203,9 @@ record Conversation(
 }
 ```
 
-If you write a datatable, you can not know if `first name` column is the first name of the `customer1` or
-the `customer2`.
-To fix this issue, you can override the fields name using `<parent_name>`, see this example:
+In a data table, you cannot tell whether the `first name` column is the first name of `customer1` or
+`customer2`.
+To fix this issue, you can prefix the column names using `<parent_name>`, see this example:
 
 ```java
 
@@ -227,7 +228,7 @@ record Customer(
 ) {
 }
 
-// parent_name will be replaced by customer1 or customer2 coming from personalInformation annotation
+// parent_name will be replaced by customer1 or customer2, coming from the personalInformation annotation
 @DataTableWithHeader
 record PersonalInformation(
         @Column("<parent_name> first name")
@@ -238,7 +239,7 @@ record PersonalInformation(
 }
 ```
 
-Using these objects, the following datatable will works:
+Using these objects, the following data tables work:
 
 ```gherkin
 # generate a Conversation object with only a customer1, and null for customer2
@@ -249,16 +250,16 @@ Using these objects, the following datatable will works:
 | customer2 id | customer2 first name | customer2 last name |
 | 10           | Thomas               | Deblock             |
 
-# generate a Conversation object with a customer2, and a customer1
-| customer2 id | customer2 first name | customer2 last name | customer2 id | customer2 first name | customer2 last name |
+# generate a Conversation object with a customer1 and a customer2
+| customer1 id | customer1 first name | customer1 last name | customer2 id | customer2 first name | customer2 last name |
 | 10           | Thomas               | Deblock             | 11           | Nicolas              | Deblock             |
 ```
 
-## Name resolution 
+## Name resolution
 
 When the column name is not explicitly specified using the `@Column` annotation, the name is derived from the field name. Three naming strategies are available:
 
-1. **Human Readable _(default)_**: Converts camel case field names to human-readable names by replacing camel case with spaces.
+1. **Human Readable _(default)_**: Converts camel case field names to human-readable names, separating words with spaces.
    - Example: `myFieldName` becomes `my field name`.
 2. **Field Name**: Keeps the original field name as the column name.
    - Example: `myFieldName` becomes `myFieldName`.
@@ -270,10 +271,10 @@ See the [configuration](#configuration) section to learn how to select a naming 
 
 ## Field resolution
 
-By default, only fields with `@Column` annotation are used as Datatable column. 
-If you don't want to need to add `@Column` to all your fields, you can set the configuration `cucumber.datatable.mapper.field-resolver-class` with the value `com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver`. In this case all fields of your class will be mapped as optional column. 
+By default, only fields with the `@Column` annotation are used as data table columns.
+If you don't want to add `@Column` to all your fields, you can set the property `cucumber.datatable.mapper.field-resolver-class` to `com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver`. In this case, all the fields of your class are mapped as optional columns.
 
-With this configuration this class will be valid: 
+With this configuration, this class is valid:
 ``` java
 @DataTableWithHeader
 class Bean {
@@ -281,7 +282,7 @@ class Bean {
     public String secondColumn;
 }
 ```
-If you want to ignore a field, you can use the `@Ignore` annotation. 
+If you want to ignore a field, use the `@Ignore` annotation.
 ``` java
 @DataTableWithHeader
 class Bean {
@@ -296,98 +297,104 @@ class Bean {
 
 ## Configuration
 
-You can configure some feature of this library to suit your coding preferences. 
-The configuration work as the same way as [default configuration](https://cucumber.io/docs/cucumber/api/?lang=java#options)
+You can configure some features of this library to suit your coding preferences.
+The configuration works the same way as the [Cucumber configuration](https://cucumber.io/docs/cucumber/api/?lang=java#options).
 
-The following properties are available on `cucumber.properties`, or using env var or system properties.
+The following properties can be set in `cucumber.properties`, or using environment variables or system properties.
 ```properties
-# The property cucumber.datatable.mapper.nameBuilderClass accepts these values: 
-# com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder -- The field name is used and write using human-readable name. Example "first name"
+# The property cucumber.datatable.mapper.name-builder-class accepts these values:
+# com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder -- The field name is written as a human-readable name. Example "first name"
 # com.deblock.cucumber.datatable.mapper.name.UseFieldNameColumnNameBuilder -- The field name is used without any transformation. Example "firstName"
-# com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder -- You can use human-readable name and fieldName.
+# com.deblock.cucumber.datatable.mapper.name.MultiNameColumnNameBuilder -- Both the human-readable name and the field name can be used.
 cucumber.datatable.mapper.name-builder-class=com.deblock.cucumber.datatable.mapper.name.HumanReadableColumnNameBuilder
-# The property cucumber.datatable.mapper.field-resolver-class accepts these values: 
-# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver -- Only fields with @Column annotation will be mapped
-# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver -- All fields of your class will be mapped
+# The property cucumber.datatable.mapper.field-resolver-class accepts these values:
+# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver -- Only fields with the @Column annotation are mapped
+# com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.ImplicitFieldResolver -- All public fields, or fields with a setter, are mapped. Use @Ignore to skip a field
 cucumber.datatable.mapper.field-resolver-class=com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers.DeclarativeFieldResolver
-# This property allow to specify how to get the now date time. You can implement your own class if you want customize it
-# com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService -- The now date is static and be the same during all the test execution
+# The property cucumber.datatable.mapper.date-time-service-class sets how the `now` date time is computed. You can implement your own class to customize it
+# com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService -- The now date is static and stays the same during the whole test execution
 cucumber.datatable.mapper.date-time-service-class=com.deblock.cucumber.datatable.mapper.typemetadata.date.StaticDateTimeService
 ```
 
 ## Usage on a fat/uber jar
 
-If you need to build an executable fat jar to run your cucumber, you should add some configuration to work with this
-library.
+If you build an executable fat jar to run your Cucumber tests, you need some extra configuration to make this
+library work.
 
-This library use the [java SPI definition](https://www.baeldung.com/java-spi) to inject some class on cucumber runtime.
+This library uses [Java SPI](https://www.baeldung.com/java-spi) to register its classes in the Cucumber runtime.
 
-When you build a fat jar, this configuration can be override by cucumber definition, so we need to merge configuration
-files.
+When you build a fat jar, the `META-INF/services` files of this library can be overwritten by the Cucumber ones, so they
+need to be merged.
 
 ### Gradle
 
-Using gradle you can use the [shadow plugin](https://imperceptiblethoughts.com/shadow/introduction/) to solve this
-issue.
-You can
-read [this chapter](https://imperceptiblethoughts.com/shadow/configuration/merging/#merging-service-descriptor-files) to
-see how to merge configuration files.
+With Gradle, you can use the [Shadow plugin](https://gradleup.com/shadow/).
+Read [this chapter](https://gradleup.com/shadow/configuration/merging/) to learn how to merge service files.
 
-example of task configuration:
+Example of task configuration:
 
 ``` gradle
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.gradleup.shadow' version '8.3.6'
 }
 
 shadowJar {
-    // specify jar name informations
+    // jar name
     archiveBaseName.set('cucumber-tests')
     archiveClassifier.set('')
 
-    // add main and tests sources on jar
+    // add main and test sources to the jar
     from sourceSets.main.output
     from sourceSets.test.output
     configurations = [
         project.configurations.compileClasspath,
         project.configurations.cucumberRuntime
     ]
-    
-    // specify the cucumber Main class
+
+    // the Cucumber main class
     manifest {
         attributes "Main-Class": "io.cucumber.core.cli.Main"
     }
 
-    // merge service files. Need to work with this lib.
+    // merge service files. Required by this library.
     mergeServiceFiles()
 }
 ```
 
 ### Maven
 
-Using maven you can use the [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/index.html) to
-solve this issue.
-You can use this plugin configuration:
+With Maven, you can use the [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/index.html).
+The `ServicesResourceTransformer` merges the service files:
 
 ``` xml
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-shade-plugin</artifactId>
-    <version>3.2.4</version>
+    <version>3.6.0</version>
     <executions>
         <execution>
+            <phase>package</phase>
             <goals>
                 <goal>shade</goal>
             </goals>
+            <configuration>
+                <transformers>
+                    <!-- merge service files. Required by this library. -->
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                    <!-- the Cucumber main class -->
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <mainClass>io.cucumber.core.cli.Main</mainClass>
+                    </transformer>
+                </transformers>
+            </configuration>
         </execution>
     </executions>
 </plugin>
 ```
 
-
 ## IDE plugins
 
-### InteliJ
+### IntelliJ
 
-An InteliJ plugin is available for this library.
-You can install It from the [Jetbrains Marketplace: Cucumber DataTable Mapping](https://plugins.jetbrains.com/plugin/24873-cucumber-datatable-mapping) 
+An IntelliJ plugin is available for this library.
+You can install it from the [JetBrains Marketplace: Cucumber DataTable Mapping](https://plugins.jetbrains.com/plugin/24873-cucumber-datatable-mapping)
