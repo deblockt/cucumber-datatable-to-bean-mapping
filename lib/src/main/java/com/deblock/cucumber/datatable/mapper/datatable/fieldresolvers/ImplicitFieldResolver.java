@@ -1,6 +1,7 @@
 package com.deblock.cucumber.datatable.mapper.datatable.fieldresolvers;
 
 import com.deblock.cucumber.datatable.annotations.Ignore;
+import com.deblock.cucumber.datatable.mapper.datatable.BeanSetters;
 import com.deblock.cucumber.datatable.mapper.datatable.ColumnName;
 import com.deblock.cucumber.datatable.mapper.datatable.FieldResolver;
 import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
@@ -8,10 +9,7 @@ import com.deblock.cucumber.datatable.mapper.name.ColumnNameBuilder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
-import java.util.Arrays;
 import java.util.Optional;
-
-import static java.util.Locale.ENGLISH;
 
 /**
  * Register all class field as datatable column.
@@ -71,16 +69,6 @@ public class ImplicitFieldResolver implements FieldResolver {
         if (Modifier.isPublic(field.getModifiers())) {
             return true;
         }
-        final var setterName = "set" + capitalize(field.getName());
-        return Arrays.stream(clazz.getMethods())
-                .filter(method -> method.getName().equals(setterName))
-                .filter(method -> method.getParameters().length == 1)
-                .filter(method -> Modifier.isPublic(method.getModifiers()))
-                .findFirst()
-                .isPresent();
-    }
-
-    private static String capitalize(String name) {
-        return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
+        return BeanSetters.findSetter(clazz, field).isPresent();
     }
 }

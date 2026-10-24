@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static java.util.Locale.ENGLISH;
-
 public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatableMapper.FieldData> {
     private final Constructor<?> constructor;
 
@@ -50,12 +48,7 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
     }
 
     private static FieldData buildFieldData(Class<?> clazz, Field field, MapperFactory mapperFactory, ColumnName parentColumnName, FieldResolver.FieldInfo fieldInfo) {
-        final var setterName = "set" + capitalize(field.getName());
-        final var setter = Arrays.stream(clazz.getMethods())
-                .filter(method -> method.getName().equals(setterName))
-                .filter(method -> method.getParameters().length == 1)
-                .filter(method -> Modifier.isPublic(method.getModifiers()))
-                .findFirst();
+        final var setter = BeanSetters.findSetter(clazz, field);
         final var datatableMapper = mapperFactory.build(
             fieldInfo,
             parentColumnName.addChild(fieldInfo.columnName()),
@@ -79,7 +72,7 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
                 }
             });
         } else {
-            throw new MalformedBeanException("Class " + clazz.getSimpleName() + ": the field " + field.getName() + " should be public or have a setter " + setterName);
+            throw new MalformedBeanException("Class " + clazz.getSimpleName() + ": the field " + field.getName() + " should be public or have a setter " + BeanSetters.setterName(field));
         }
     }
 
@@ -101,12 +94,5 @@ public class BeanDatatableMapper extends BaseObjectDatatableMapper<BeanDatatable
         public Object convert(Map<String, String> entry) {
             return mapper.convert(entry);
         }
-    }
-
-    private static String capitalize(String name) {
-        if (name == null || name.isEmpty()) {
-            return name;
-        }
-        return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
     }
 }
