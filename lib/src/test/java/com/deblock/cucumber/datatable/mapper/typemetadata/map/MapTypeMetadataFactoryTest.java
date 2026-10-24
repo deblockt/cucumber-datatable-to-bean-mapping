@@ -1,6 +1,6 @@
 package com.deblock.cucumber.datatable.mapper.typemetadata.map;
 
-import io.cucumber.messages.ndjson.internal.com.fasterxml.jackson.core.type.TypeReference;
+import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,7 +13,7 @@ class MapTypeMetadataFactoryTest {
     void shouldConvertAJsonObjectToAMap() {
         final var metadataFactory = new MapTypeMetadataFactory();
 
-        final var result = metadataFactory.build(new TypeReference<Map<String, String>>(){}.getType());
+        final var result = metadataFactory.build(new TypeToken<Map<String, String>>(){}.getType());
 
         assertThat(result).isInstanceOf(MapTypeMetadata.class);
     }
