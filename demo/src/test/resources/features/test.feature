@@ -6,9 +6,9 @@ Feature: Mapping
       | string | integer | integers      |
       | s      | 1       | 1, 3, 4, 5, 6 |
     And a step with a list of record
-      | string | integer | integers | customDTO | other custom dto |
-      | s      | 10      |          | false     | test1            |
-      | a      | 11      | 3, 1039  | test      | test2            |
+      | string | integer | integers | custom dto | other custom dto |
+      | s      | 10      |          |            | test1            |
+      | a      | 11      | 3, 1039  | test       | test2            |
 
 
   Scenario: Failed due to typo on column
@@ -20,6 +20,11 @@ Feature: Mapping
     Given a step with a list
       | string | integer |
       | s      | 10      |
+
+  Scenario: Failed due to invalid custom value
+    Given a step with a list of record
+      | string | custom dto |
+      | s      | false      |
 
   Scenario: Map a json object column to a Map
     Given a step with a map column
