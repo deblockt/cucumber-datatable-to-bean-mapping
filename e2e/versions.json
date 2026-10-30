@@ -1,0 +1,6 @@
+[
+  { "cucumber": "7.8.1", "junit": "5.9.1" },
+  { "cucumber": "7.10.0", "junit": "5.9.1" },
+  { "cucumber": "7.34.2", "junit": "5.14.2" },
+  { "cucumber": "8.0.4", "junit": "6.1.3" }
+]

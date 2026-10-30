@@ -1,0 +1,40 @@
+import groovy.json.JsonSlurper
+
+plugins {
+    id 'java'
+}
+
+// The Cucumber x JUnit combinations come from versions.json, shared with the CI matrix.
+// Without -PcucumberVersion / -PjunitVersion, the last entry is used.
+def defaultVersions = new JsonSlurper().parse(file('versions.json')).last()
+def cucumberVersion = findProperty('cucumberVersion') ?: defaultVersions.cucumber
+def junitVersion = findProperty('junitVersion') ?: defaultVersions.junit
+
+dependencies {
+    testImplementation project(':lib')
+    testImplementation "io.cucumber:cucumber-java:$cucumberVersion"
+    testImplementation "io.cucumber:cucumber-junit-platform-engine:$cucumberVersion"
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.platform:junit-platform-testkit'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    // The Cucumber engine is only launched by EngineTestKit, from the Jupiter tests
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter'
+    }
+    // Print the failure message (expected / actual mapped value) in the console and the CI logs
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+        showStackTraces false
+    }
+    inputs.property('cucumberVersion', cucumberVersion)
+    inputs.property('junitVersion', junitVersion)
+    doFirst {
+        logger.lifecycle("e2e tests with Cucumber $cucumberVersion and JUnit $junitVersion")
+    }
+}
