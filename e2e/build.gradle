@@ -26,6 +26,12 @@ test {
     useJUnitPlatform {
         includeEngines 'junit-jupiter'
     }
+    // Print the failure message (expected / actual mapped value) in the console and the CI logs
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+        showStackTraces false
+    }
     inputs.property('cucumberVersion', cucumberVersion)
     inputs.property('junitVersion', junitVersion)
     doFirst {
