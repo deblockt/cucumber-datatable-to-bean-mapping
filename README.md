@@ -141,7 +141,7 @@ This data table:
 ``` gherkin
 Given the following customers
   | first name |
-  | Thomas     |
+  | John       |
 ```
 
 fails with:
@@ -285,17 +285,17 @@ If you want these steps to work:
 ```gherkin
 Given the following customer exists
 | code     | first name | last name |
-| deblockt | Thomas     | Deblock   |
+| jdoe     | John       | Doe       |
 When I want to do something with a customer
 | customer code |
-| deblockt      |
+| jdoe          |
 ```
 
 You need to write a method that maps a string to a `Customer`, and annotate it with `@CustomDatatableFieldMapper`:
 
 ```java
 public class CustomerSteps {
-    @CustomDatatableFieldMapper(sample = "deblockt", typeDescription = "Customer")
+    @CustomDatatableFieldMapper(sample = "jdoe", typeDescription = "Customer")
     public Customer customerMapper(String customerCode) {
         // Get the customer from your test context (a static context, or one injected with Spring or PicoContainer)
     }
@@ -352,7 +352,7 @@ Using these objects, the data table looks like this:
 
 ```gherkin
 | id | first name | last name |
-| 10 | Thomas     | Deblock   |
+| 10 | John       | Doe       |
 ```
 
 Now, if you have another object `Conversation` with two customers, like this:
@@ -410,15 +410,15 @@ Using these objects, the following data tables work:
 ```gherkin
 # generate a Conversation object with only a customer1, and null for customer2
 | customer1 id | customer1 first name | customer1 last name |
-| 10           | Thomas               | Deblock             |
+| 10           | John                 | Doe                 |
 
 # generate a Conversation object with only a customer2, and null for customer1
 | customer2 id | customer2 first name | customer2 last name |
-| 10           | Thomas               | Deblock             |
+| 10           | John                 | Doe                 |
 
 # generate a Conversation object with a customer1 and a customer2
 | customer1 id | customer1 first name | customer1 last name | customer2 id | customer2 first name | customer2 last name |
-| 10           | Thomas               | Deblock             | 11           | Nicolas              | Deblock             |
+| 10           | John                 | Doe                 | 11           | Jane                 | Doe                 |
 ```
 
 ## Extension points
